@@ -1570,7 +1570,7 @@ pub fn create_window_expr(
     create_window_expr_with_name(e, name, logical_schema, execution_props)
 }
 
-type AggregateExprWithOptionalArgs = (
+pub type AggregateExprWithOptionalArgs = (
     Arc<AggregateFunctionExpr>,
     // The filter clause, if any
     Option<Arc<dyn PhysicalExpr>>,
