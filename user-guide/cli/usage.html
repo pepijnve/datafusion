@@ -31,7 +31,6 @@
     <script src="../../_static/documentation_options.js?v=8a448e45"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script async="true" defer="true" src="https://buttons.github.io/buttons.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Local Files / Directories" href="datasources.html" />
@@ -152,6 +151,11 @@
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="../features.html">
+   Features
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="../concepts-readings-events.html">
    Concepts, Readings, Events
   </a>
@@ -250,7 +254,7 @@
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="../sql/operators.html">
-     Operators
+     Operators and Literals
     </a>
    </li>
    <li class="toctree-l2">
@@ -274,13 +278,13 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../sql/sql_status.html">
-     Status
+    <a class="reference internal" href="../sql/format_options.html">
+     Format Options
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../sql/write_options.html">
-     Write Options
+    <a class="reference internal" href="../sql/prepared_statements.html">
+     Prepared Statements
     </a>
    </li>
   </ul>
@@ -288,6 +292,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../configs.html">
    Configuration Settings
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../runtime_configs.html">
+   Runtime Environment Configurations
   </a>
  </li>
  <li class="toctree-l1">
@@ -374,8 +383,8 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../library-user-guide/api-health.html">
-   API health policy
+  <a class="reference internal" href="../../library-user-guide/upgrading.html">
+   Upgrade Guides
   </a>
  </li>
 </ul>
@@ -396,8 +405,8 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../contributor-guide/getting_started.html">
-   Getting Started
+  <a class="reference internal" href="../../contributor-guide/development_environment.html">
+   Development Environment
   </a>
  </li>
  <li class="toctree-l1">
@@ -408,6 +417,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../../contributor-guide/testing.html">
    Testing
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../contributor-guide/api-health.html">
+   API health policy
   </a>
  </li>
  <li class="toctree-l1">
@@ -451,6 +465,16 @@
     </a>
    </li>
   </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../contributor-guide/gsoc_application_guidelines.html">
+   GSoC Application Guidelines
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../contributor-guide/gsoc_project_ideas.html">
+   GSoC Project Ideas
+  </a>
  </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
@@ -665,6 +689,12 @@ OPTIONS:
 <span class="w">        </span>--mem-pool-type<span class="w"> </span>&lt;MEM_POOL_TYPE&gt;
 <span class="w">            </span>Specify<span class="w"> </span>the<span class="w"> </span>memory<span class="w"> </span>pool<span class="w"> </span><span class="nb">type</span><span class="w"> </span><span class="s1">&#39;greedy&#39;</span><span class="w"> </span>or<span class="w"> </span><span class="s1">&#39;fair&#39;</span>,<span class="w"> </span>default<span class="w"> </span>to<span class="w"> </span><span class="s1">&#39;greedy&#39;</span>
 
+<span class="w">        </span>--top-memory-consumers<span class="w"> </span>&lt;TOP_MEMORY_CONSUMERS&gt;
+<span class="w">            </span>The<span class="w"> </span>number<span class="w"> </span>of<span class="w"> </span>top<span class="w"> </span>memory<span class="w"> </span>consumers<span class="w"> </span>to<span class="w"> </span>display<span class="w"> </span>when<span class="w"> </span>query<span class="w"> </span>fails<span class="w"> </span>due<span class="w"> </span>to<span class="w"> </span>memory<span class="w"> </span>exhaustion.<span class="w"> </span>To<span class="w"> </span>disable<span class="w"> </span>memory<span class="w"> </span>consumer<span class="w"> </span>tracking,<span class="w"> </span><span class="nb">set</span><span class="w"> </span>this<span class="w"> </span>value<span class="w"> </span>to<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">[</span>default:<span class="w"> </span><span class="m">3</span><span class="o">]</span>
+
+<span class="w">    </span>-d,<span class="w"> </span>--disk-limit<span class="w"> </span>&lt;DISK_LIMIT&gt;
+<span class="w">            </span>Available<span class="w"> </span>disk<span class="w"> </span>space<span class="w"> </span><span class="k">for</span><span class="w"> </span>spilling<span class="w"> </span>queries<span class="w"> </span><span class="o">(</span>e.g.<span class="w"> </span><span class="s1">&#39;10g&#39;</span><span class="o">)</span>,<span class="w"> </span>default<span class="w"> </span>to<span class="w"> </span>None<span class="w"> </span><span class="o">(</span>uses<span class="w"> </span>DataFusion<span class="s1">&#39;s default value of &#39;</span>100g<span class="err">&#39;</span><span class="o">)</span>
+
 <span class="w">    </span>-p,<span class="w"> </span>--data-path<span class="w"> </span>&lt;DATA_PATH&gt;
 <span class="w">            </span>Path<span class="w"> </span>to<span class="w"> </span>your<span class="w"> </span>data,<span class="w"> </span>default<span class="w"> </span>to<span class="w"> </span>current<span class="w"> </span>directory
 
@@ -731,7 +761,7 @@ supports additional statements and commands:</p>
 <section id="show-all-verbose">
 <h3><code class="docutils literal notranslate"><span class="pre">SHOW</span> <span class="pre">ALL</span> <span class="pre">[VERBOSE]</span></code><a class="headerlink" href="#show-all-verbose" title="Link to this heading">¶</a></h3>
 <p>Show configuration options</p>
-<div class="highlight-SQL notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="k">all</span><span class="p">;</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span><span class="w"> </span><span class="k">show</span><span class="w"> </span><span class="k">all</span><span class="p">;</span>
 
 <span class="o">+</span><span class="c1">-------------------------------------------------+---------+</span>
 <span class="o">|</span><span class="w"> </span><span class="n">name</span><span class="w">                                            </span><span class="o">|</span><span class="w"> </span><span class="n">value</span><span class="w">   </span><span class="o">|</span>
@@ -765,7 +795,7 @@ supports additional statements and commands:</p>
 <ul class="simple">
 <li><p>Set configuration options</p></li>
 </ul>
-<div class="highlight-SQL notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">datafusion</span><span class="p">.</span><span class="n">execution</span><span class="p">.</span><span class="n">batch_size</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="mi">1024</span><span class="p">;</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">datafusion</span><span class="p">.</span><span class="n">execution</span><span class="p">.</span><span class="n">batch_size</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="mi">1024</span><span class="p">;</span>
 </pre></div>
 </div>
 </section>
@@ -991,13 +1021,13 @@ in the file. Please refer to the <a class="reference external" href="https://par
     
     <div class="footer-item">
       <p class="copyright">
-    &copy; Copyright 2019-2024, Apache Software Foundation.<br>
+    &copy; Copyright 2019-2025, Apache Software Foundation.<br>
 </p>
     </div>
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.1.3.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.<br>
 </p>
     </div>
     

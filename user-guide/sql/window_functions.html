@@ -31,7 +31,6 @@
     <script src="../../_static/documentation_options.js?v=8a448e45"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script async="true" defer="true" src="https://buttons.github.io/buttons.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Scalar Functions" href="scalar_functions.html" />
@@ -152,6 +151,11 @@
   </a>
  </li>
  <li class="toctree-l1">
+  <a class="reference internal" href="../features.html">
+   Features
+  </a>
+ </li>
+ <li class="toctree-l1">
   <a class="reference internal" href="../concepts-readings-events.html">
    Concepts, Readings, Events
   </a>
@@ -250,7 +254,7 @@
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="operators.html">
-     Operators
+     Operators and Literals
     </a>
    </li>
    <li class="toctree-l2">
@@ -274,13 +278,13 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="sql_status.html">
-     Status
+    <a class="reference internal" href="format_options.html">
+     Format Options
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="write_options.html">
-     Write Options
+    <a class="reference internal" href="prepared_statements.html">
+     Prepared Statements
     </a>
    </li>
   </ul>
@@ -288,6 +292,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../configs.html">
    Configuration Settings
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../runtime_configs.html">
+   Runtime Environment Configurations
   </a>
  </li>
  <li class="toctree-l1">
@@ -374,8 +383,8 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../library-user-guide/api-health.html">
-   API health policy
+  <a class="reference internal" href="../../library-user-guide/upgrading.html">
+   Upgrade Guides
   </a>
  </li>
 </ul>
@@ -396,8 +405,8 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../contributor-guide/getting_started.html">
-   Getting Started
+  <a class="reference internal" href="../../contributor-guide/development_environment.html">
+   Development Environment
   </a>
  </li>
  <li class="toctree-l1">
@@ -408,6 +417,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../../contributor-guide/testing.html">
    Testing
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../contributor-guide/api-health.html">
+   API health policy
   </a>
  </li>
  <li class="toctree-l1">
@@ -451,6 +465,16 @@
     </a>
    </li>
   </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../contributor-guide/gsoc_application_guidelines.html">
+   GSoC Application Guidelines
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../contributor-guide/gsoc_project_ideas.html">
+   GSoC Project Ideas
+  </a>
  </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
@@ -526,6 +550,13 @@
       </span>
      </code>
     </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#example">
+       Example
+      </a>
+     </li>
+    </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#dense-rank">
@@ -535,6 +566,13 @@
       </span>
      </code>
     </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id1">
+       Example
+      </a>
+     </li>
+    </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#ntile">
@@ -550,6 +588,11 @@
        Arguments
       </a>
      </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id2">
+       Example
+      </a>
+     </li>
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
@@ -560,6 +603,13 @@
       </span>
      </code>
     </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id3">
+       Example
+      </a>
+     </li>
+    </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#rank">
@@ -569,6 +619,13 @@
       </span>
      </code>
     </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id4">
+       Example
+      </a>
+     </li>
+    </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#row-number">
@@ -578,26 +635,20 @@
       </span>
      </code>
     </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#analytical-functions">
-   Analytical Functions
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#first-value">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       first_value
-      </span>
-     </code>
-    </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#id1">
+      <a class="reference internal nav-link" href="#id5">
+       Example
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id6">
        Arguments
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id7">
+       Example
       </a>
      </li>
     </ul>
@@ -612,8 +663,13 @@
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#id2">
+      <a class="reference internal nav-link" href="#id8">
        Arguments
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id9">
+       Example
       </a>
      </li>
     </ul>
@@ -628,8 +684,13 @@
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#id3">
+      <a class="reference internal nav-link" href="#id10">
        Arguments
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id11">
+       Example
       </a>
      </li>
     </ul>
@@ -644,8 +705,13 @@
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#id4">
+      <a class="reference internal nav-link" href="#id12">
        Arguments
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id13">
+       Example
       </a>
      </li>
     </ul>
@@ -660,8 +726,13 @@
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#id5">
+      <a class="reference internal nav-link" href="#id14">
        Arguments
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id15">
+       Example
       </a>
      </li>
     </ul>
@@ -800,17 +871,17 @@ Instead, the rows retain their separate identities. Behind the scenes, the windo
 <section id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Link to this heading">¶</a></h2>
 <p>The syntax for the OVER-clause is</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>function([expr])
-  OVER(
-    [PARTITION BY expr[, …]]
-    [ORDER BY expr [ ASC | DESC ][, …]]
-    [ frame_clause ]
-    )
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">function</span><span class="p">([</span><span class="n">expr</span><span class="p">])</span>
+<span class="w">  </span><span class="n">OVER</span><span class="p">(</span>
+<span class="w">    </span><span class="p">[</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">expr</span><span class="p">[,</span><span class="w"> </span><span class="err">…</span><span class="p">]]</span>
+<span class="w">    </span><span class="p">[</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">expr</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="k">ASC</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">DESC</span><span class="w"> </span><span class="p">][,</span><span class="w"> </span><span class="err">…</span><span class="p">]]</span>
+<span class="w">    </span><span class="p">[</span><span class="w"> </span><span class="n">frame_clause</span><span class="w"> </span><span class="p">]</span>
+<span class="w">    </span><span class="p">)</span>
 </pre></div>
 </div>
 <p>where <strong>frame_clause</strong> is one of:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="p">{</span> <span class="n">RANGE</span> <span class="o">|</span> <span class="n">ROWS</span> <span class="o">|</span> <span class="n">GROUPS</span> <span class="p">}</span> <span class="n">frame_start</span>
-  <span class="p">{</span> <span class="n">RANGE</span> <span class="o">|</span> <span class="n">ROWS</span> <span class="o">|</span> <span class="n">GROUPS</span> <span class="p">}</span> <span class="n">BETWEEN</span> <span class="n">frame_start</span> <span class="n">AND</span> <span class="n">frame_end</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="err">{</span><span class="w"> </span><span class="n">RANGE</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">ROWS</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">GROUPS</span><span class="w"> </span><span class="err">}</span><span class="w"> </span><span class="n">frame_start</span>
+<span class="w">  </span><span class="err">{</span><span class="w"> </span><span class="n">RANGE</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="k">ROWS</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">GROUPS</span><span class="w"> </span><span class="err">}</span><span class="w"> </span><span class="k">BETWEEN</span><span class="w"> </span><span class="n">frame_start</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">frame_end</span>
 </pre></div>
 </div>
 <p>and <strong>frame_start</strong> and <strong>frame_end</strong> can be one of</p>
@@ -840,22 +911,62 @@ Instead, the rows retain their separate identities. Behind the scenes, the windo
 </ul>
 <section id="cume-dist">
 <h3><code class="docutils literal notranslate"><span class="pre">cume_dist</span></code><a class="headerlink" href="#cume-dist" title="Link to this heading">¶</a></h3>
-<p>Relative rank of the current row: (number of rows preceding or peer with current row) / (total rows).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cume_dist</span><span class="p">()</span>
+<p>Relative rank of the current row: (number of rows preceding or peer with the current row) / (total rows).</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="n">cume_dist</span><span class="p">()</span>
 </pre></div>
 </div>
+<section id="example">
+<h4>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h4>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">--Example usage of the cume_dist window function:</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">       </span><span class="n">cume_dist</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">cume_dist</span>
+<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">--------+-----------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">cume_dist</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">--------+-----------+</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">33</span><span class="w">      </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">67</span><span class="w">      </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">00</span><span class="w">      </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">--------+-----------+</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="dense-rank">
 <h3><code class="docutils literal notranslate"><span class="pre">dense_rank</span></code><a class="headerlink" href="#dense-rank" title="Link to this heading">¶</a></h3>
 <p>Returns the rank of the current row without gaps. This function ranks rows in a dense manner, meaning consecutive ranks are assigned even for identical values.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dense_rank</span><span class="p">()</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="n">dense_rank</span><span class="p">()</span>
 </pre></div>
 </div>
+<section id="id1">
+<h4>Example<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h4>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">--Example usage of the dense_rank window function:</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">department</span><span class="p">,</span>
+<span class="w">           </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">           </span><span class="n">dense_rank</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">department</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">dense_rank</span>
+<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+--------+------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">department</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">dense_rank</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+--------+------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">          </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">          </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">          </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">3</span><span class="w">          </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Engineering</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">90000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">          </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Engineering</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">80000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">          </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+--------+------------+</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="ntile">
 <h3><code class="docutils literal notranslate"><span class="pre">ntile</span></code><a class="headerlink" href="#ntile" title="Link to this heading">¶</a></h3>
 <p>Integer ranging from 1 to the argument value, dividing the partition as equally as possible</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ntile</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="n">ntile</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span>
 </pre></div>
 </div>
 <section id="arguments">
@@ -864,106 +975,311 @@ Instead, the rows retain their separate identities. Behind the scenes, the windo
 <li><p><strong>expression</strong>: An integer describing the number groups the partition should be split into</p></li>
 </ul>
 </section>
+<section id="id2">
+<h4>Example<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h4>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">--Example usage of the ntile window function:</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">employee_id</span><span class="p">,</span>
+<span class="w">           </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">           </span><span class="n">ntile</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">quartile</span>
+<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+--------+----------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">employee_id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">quartile</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+--------+----------+</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">90000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">        </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">85000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">        </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">3</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">80000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">        </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">4</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">        </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">5</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">60000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">3</span><span class="w">        </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">6</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">3</span><span class="w">        </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">7</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">40000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">4</span><span class="w">        </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">8</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">4</span><span class="w">        </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+--------+----------+</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="percent-rank">
 <h3><code class="docutils literal notranslate"><span class="pre">percent_rank</span></code><a class="headerlink" href="#percent-rank" title="Link to this heading">¶</a></h3>
 <p>Returns the percentage rank of the current row within its partition. The value ranges from 0 to 1 and is computed as <code class="docutils literal notranslate"><span class="pre">(rank</span> <span class="pre">-</span> <span class="pre">1)</span> <span class="pre">/</span> <span class="pre">(total_rows</span> <span class="pre">-</span> <span class="pre">1)</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">percent_rank</span><span class="p">()</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="n">percent_rank</span><span class="p">()</span>
 </pre></div>
 </div>
+<section id="id3">
+<h4>Example<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h4>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">--Example usage of the percent_rank window function:</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">employee_id</span><span class="p">,</span>
+<span class="w">           </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">           </span><span class="n">percent_rank</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">percent_rank</span>
+<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+--------+---------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">employee_id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">percent_rank</span><span class="w">  </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+--------+---------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span><span class="w">          </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">50</span><span class="w">          </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">3</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">00</span><span class="w">          </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+--------+---------------+</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="rank">
 <h3><code class="docutils literal notranslate"><span class="pre">rank</span></code><a class="headerlink" href="#rank" title="Link to this heading">¶</a></h3>
 <p>Returns the rank of the current row within its partition, allowing gaps between ranks. This function provides a ranking similar to <code class="docutils literal notranslate"><span class="pre">row_number</span></code>, but skips ranks for identical values.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rank</span><span class="p">()</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="n">rank</span><span class="p">()</span>
 </pre></div>
 </div>
+<section id="id4">
+<h4>Example<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">--Example usage of the rank window function:</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">department</span><span class="p">,</span>
+<span class="w">           </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">           </span><span class="n">rank</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">department</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">rank</span>
+<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+--------+------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">department</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">rank</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+--------+------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">    </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">    </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">    </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">4</span><span class="w">    </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Engineering</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">90000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">    </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Engineering</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">80000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">    </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+--------+------+</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="row-number">
 <h3><code class="docutils literal notranslate"><span class="pre">row_number</span></code><a class="headerlink" href="#row-number" title="Link to this heading">¶</a></h3>
 <p>Number of the current row within its partition, counting from 1.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">row_number</span><span class="p">()</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="n">row_number</span><span class="p">()</span>
+</pre></div>
+</div>
+<section id="id5">
+<h4>Example<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h4>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">--Example usage of the row_number window function:</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">department</span><span class="p">,</span>
+<span class="w">           </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">           </span><span class="n">row_number</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">department</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">row_num</span>
+<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+--------+---------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">department</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">row_num</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+--------+---------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">3</span><span class="w">       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">4</span><span class="w">       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Engineering</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">90000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Engineering</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">80000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">       </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+--------+---------+</span>
+<span class="o">```#</span>
+
+
+<span class="o">##</span><span class="w"> </span><span class="n">Analytical</span><span class="w"> </span><span class="n">Functions</span>
+
+<span class="o">-</span><span class="w"> </span><span class="p">[</span><span class="n">first_value</span><span class="p">](</span><span class="o">#</span><span class="n">first_value</span><span class="p">)</span>
+<span class="o">-</span><span class="w"> </span><span class="p">[</span><span class="n">lag</span><span class="p">](</span><span class="o">#</span><span class="n">lag</span><span class="p">)</span>
+<span class="o">-</span><span class="w"> </span><span class="p">[</span><span class="n">last_value</span><span class="p">](</span><span class="o">#</span><span class="n">last_value</span><span class="p">)</span>
+<span class="o">-</span><span class="w"> </span><span class="p">[</span><span class="n">lead</span><span class="p">](</span><span class="o">#</span><span class="n">lead</span><span class="p">)</span>
+<span class="o">-</span><span class="w"> </span><span class="p">[</span><span class="n">nth_value</span><span class="p">](</span><span class="o">#</span><span class="n">nth_value</span><span class="p">)</span>
+
+<span class="o">###</span><span class="w"> </span><span class="o">`</span><span class="n">first_value</span><span class="o">`</span>
+
+<span class="k">Returns</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="n">evaluated</span><span class="w"> </span><span class="k">at</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="n">that</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="k">first</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">window</span><span class="w"> </span><span class="n">frame</span><span class="p">.</span>
+
+<span class="o">```</span><span class="k">sql</span>
+<span class="n">first_value</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
-</section>
-<section id="analytical-functions">
-<h2>Analytical Functions<a class="headerlink" href="#analytical-functions" title="Link to this heading">¶</a></h2>
-<ul class="simple">
-<li><p><a class="reference internal" href="#first-value">first_value</a></p></li>
-<li><p><a class="reference internal" href="#lag">lag</a></p></li>
-<li><p><a class="reference internal" href="#last-value">last_value</a></p></li>
-<li><p><a class="reference internal" href="#lead">lead</a></p></li>
-<li><p><a class="reference internal" href="#nth-value">nth_value</a></p></li>
-</ul>
-<section id="first-value">
-<h3><code class="docutils literal notranslate"><span class="pre">first_value</span></code><a class="headerlink" href="#first-value" title="Link to this heading">¶</a></h3>
-<p>Returns value evaluated at the row that is the first row of the window frame.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">first_value</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span>
-</pre></div>
-</div>
-<section id="id1">
-<h4>Arguments<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h4>
+<section id="id6">
+<h4>Arguments<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>expression</strong>: Expression to operate on</p></li>
 </ul>
+</section>
+<section id="id7">
+<h4>Example<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h4>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">--Example usage of the first_value window function:</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">department</span><span class="p">,</span>
+<span class="w">           </span><span class="n">employee_id</span><span class="p">,</span>
+<span class="w">           </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">           </span><span class="n">first_value</span><span class="p">(</span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">department</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">top_salary</span>
+<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+-------------+--------+------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">department</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">employee_id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">top_salary</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+-------------+--------+------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">      </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">      </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">3</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">      </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Engineering</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">4</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">90000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">90000</span><span class="w">      </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Engineering</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">5</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">80000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">90000</span><span class="w">      </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+-------------+--------+------------+</span>
+</pre></div>
+</div>
 </section>
 </section>
 <section id="lag">
 <h3><code class="docutils literal notranslate"><span class="pre">lag</span></code><a class="headerlink" href="#lag" title="Link to this heading">¶</a></h3>
 <p>Returns value evaluated at the row that is offset rows before the current row within the partition; if there is no such row, instead return default (which must be of the same type as value).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lag</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="n">lag</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span><span class="w"> </span><span class="k">offset</span><span class="p">,</span><span class="w"> </span><span class="k">default</span><span class="p">)</span>
 </pre></div>
 </div>
-<section id="id2">
-<h4>Arguments<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h4>
+<section id="id8">
+<h4>Arguments<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>expression</strong>: Expression to operate on</p></li>
 <li><p><strong>offset</strong>: Integer. Specifies how many rows back the value of expression should be retrieved. Defaults to 1.</p></li>
 <li><p><strong>default</strong>: The default value if the offset is not within the partition. Must be of the same type as expression.</p></li>
 </ul>
 </section>
+<section id="id9">
+<h4>Example<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h4>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">--Example usage of the lag window function:</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">employee_id</span><span class="p">,</span>
+<span class="w">           </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">           </span><span class="n">lag</span><span class="p">(</span><span class="n">salary</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">employee_id</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">prev_salary</span>
+<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+--------+-------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">employee_id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">prev_salary</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+--------+-------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">0</span><span class="w">           </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">3</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">       </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">4</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">60000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">       </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+--------+-------------+</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="last-value">
 <h3><code class="docutils literal notranslate"><span class="pre">last_value</span></code><a class="headerlink" href="#last-value" title="Link to this heading">¶</a></h3>
 <p>Returns value evaluated at the row that is the last row of the window frame.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">last_value</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="n">last_value</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span>
 </pre></div>
 </div>
-<section id="id3">
-<h4>Arguments<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h4>
+<section id="id10">
+<h4>Arguments<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>expression</strong>: Expression to operate on</p></li>
 </ul>
+</section>
+<section id="id11">
+<h4>Example<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h4>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- SQL example of last_value:</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">department</span><span class="p">,</span>
+<span class="w">       </span><span class="n">employee_id</span><span class="p">,</span>
+<span class="w">       </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">       </span><span class="n">last_value</span><span class="p">(</span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">department</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">running_last_salary</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+-------------+--------+---------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">department</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">employee_id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">running_last_salary</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+-------------+--------+---------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">               </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">               </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">3</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">               </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Engineering</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">4</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">40000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">40000</span><span class="w">               </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="n">Engineering</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">5</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">60000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">60000</span><span class="w">               </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+-------------+--------+---------------------+</span>
+</pre></div>
+</div>
 </section>
 </section>
 <section id="lead">
 <h3><code class="docutils literal notranslate"><span class="pre">lead</span></code><a class="headerlink" href="#lead" title="Link to this heading">¶</a></h3>
 <p>Returns value evaluated at the row that is offset rows after the current row within the partition; if there is no such row, instead return default (which must be of the same type as value).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lead</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="n">lead</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span><span class="w"> </span><span class="k">offset</span><span class="p">,</span><span class="w"> </span><span class="k">default</span><span class="p">)</span>
 </pre></div>
 </div>
-<section id="id4">
-<h4>Arguments<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
+<section id="id12">
+<h4>Arguments<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>expression</strong>: Expression to operate on</p></li>
 <li><p><strong>offset</strong>: Integer. Specifies how many rows forward the value of expression should be retrieved. Defaults to 1.</p></li>
 <li><p><strong>default</strong>: The default value if the offset is not within the partition. Must be of the same type as expression.</p></li>
 </ul>
 </section>
+<section id="id13">
+<h4>Example<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h4>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- Example usage of lead() :</span>
+<span class="k">SELECT</span>
+<span class="w">    </span><span class="n">employee_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">department</span><span class="p">,</span>
+<span class="w">    </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">    </span><span class="n">lead</span><span class="p">(</span><span class="n">salary</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">department</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">next_salary</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+-------------+--------+--------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">employee_id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">department</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">next_salary</span><span class="w">  </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+-------------+--------+--------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">        </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">        </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">3</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">0</span><span class="w">            </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">4</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="n">Engineering</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">40000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">60000</span><span class="w">        </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">5</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="n">Engineering</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">60000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">0</span><span class="w">            </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-------------+-------------+--------+--------------+</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="nth-value">
 <h3><code class="docutils literal notranslate"><span class="pre">nth_value</span></code><a class="headerlink" href="#nth-value" title="Link to this heading">¶</a></h3>
-<p>Returns value evaluated at the row that is the nth row of the window frame (counting from 1); null if no such row.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nth_value</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<p>Returns the value evaluated at the nth row of the window frame (counting from 1). Returns NULL if no such row exists.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="n">nth_value</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">)</span>
 </pre></div>
 </div>
-<section id="id5">
-<h4>Arguments<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h4>
+<section id="id14">
+<h4>Arguments<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h4>
 <ul class="simple">
-<li><p><strong>expression</strong>: The name the column of which nth value to retrieve</p></li>
-<li><p><strong>n</strong>: Integer. Specifies the n in nth</p></li>
+<li><p><strong>expression</strong>: The column from which to retrieve the nth value.</p></li>
+<li><p><strong>n</strong>: Integer. Specifies the row number (starting from 1) in the window frame.</p></li>
 </ul>
+</section>
+<section id="id15">
+<h4>Example<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h4>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- Sample employees table:</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">employees</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="nb">INT</span><span class="p">);</span>
+<span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">employees</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="k">VALUES</span>
+<span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">30000</span><span class="p">),</span>
+<span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">40000</span><span class="p">),</span>
+<span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">50000</span><span class="p">),</span>
+<span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">60000</span><span class="p">),</span>
+<span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">70000</span><span class="p">);</span>
+
+<span class="c1">-- Example usage of nth_value:</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">nth_value</span><span class="p">(</span><span class="n">salary</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span>
+<span class="w">  </span><span class="k">ROWS</span><span class="w"> </span><span class="k">BETWEEN</span><span class="w"> </span><span class="n">UNBOUNDED</span><span class="w"> </span><span class="n">PRECEDING</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="k">CURRENT</span><span class="w"> </span><span class="k">ROW</span>
+<span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">nth_value</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>+-----------+
+| nth_value |
++-----------+
+| 40000     |
+| 40000     |
+| 40000     |
+| 40000     |
+| 40000     |
++-----------+
+</pre></div>
+</div>
 </section>
 </section>
 </section>
@@ -1005,13 +1321,13 @@ Instead, the rows retain their separate identities. Behind the scenes, the windo
     
     <div class="footer-item">
       <p class="copyright">
-    &copy; Copyright 2019-2024, Apache Software Foundation.<br>
+    &copy; Copyright 2019-2025, Apache Software Foundation.<br>
 </p>
     </div>
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.1.3.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.<br>
 </p>
     </div>
     
