@@ -48,7 +48,8 @@ use datafusion_physical_expr_common::sort_expr::{
     OrderingRequirements, PhysicalSortExpr,
 };
 
-use futures::{ready, Stream, StreamExt};
+use crate::r#yield::PollBudget;
+use futures::{ready, FutureExt, Stream, StreamExt};
 
 /// Window execution plan
 #[derive(Debug, Clone)]
@@ -274,6 +275,7 @@ impl ExecutionPlan for WindowAggExec {
         partition: usize,
         context: Arc<TaskContext>,
     ) -> Result<SendableRecordBatchStream> {
+        let poll_budget = PollBudget::from(context.as_ref());
         let input = self.input.execute(partition, context)?;
         let stream = Box::pin(WindowAggStream::new(
             Arc::clone(&self.schema),
@@ -282,6 +284,7 @@ impl ExecutionPlan for WindowAggExec {
             BaselineMetrics::new(&self.metrics, partition),
             self.partition_by_sort_keys()?,
             self.ordered_partition_by_indices.clone(),
+            poll_budget,
         )?);
         Ok(stream)
     }
@@ -324,6 +327,7 @@ pub struct WindowAggStream {
     partition_by_sort_keys: Vec<PhysicalSortExpr>,
     baseline_metrics: BaselineMetrics,
     ordered_partition_by_indices: Vec<usize>,
+    poll_budget: PollBudget,
 }
 
 impl WindowAggStream {
@@ -335,6 +339,7 @@ impl WindowAggStream {
         baseline_metrics: BaselineMetrics,
         partition_by_sort_keys: Vec<PhysicalSortExpr>,
         ordered_partition_by_indices: Vec<usize>,
+        poll_budget: PollBudget,
     ) -> Result<Self> {
         // In WindowAggExec all partition by columns should be ordered.
         if window_expr[0].partition_by().len() != ordered_partition_by_indices.len() {
@@ -349,6 +354,7 @@ impl WindowAggStream {
             baseline_metrics,
             partition_by_sort_keys,
             ordered_partition_by_indices,
+            poll_budget,
         })
     }
 
@@ -420,10 +426,13 @@ impl WindowAggStream {
             return Poll::Ready(None);
         }
 
+        let mut consume_budget = self.poll_budget.consume_budget();
+
         loop {
             return Poll::Ready(Some(match ready!(self.input.poll_next_unpin(cx)) {
                 Some(Ok(batch)) => {
                     self.batches.push(batch);
+                    ready!(consume_budget.poll_unpin(cx));
                     continue;
                 }
                 Some(Err(e)) => Err(e),

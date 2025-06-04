@@ -61,7 +61,9 @@ use datafusion_physical_expr::{
     analyze, conjunction, split_conjunction, AcrossPartitions, AnalysisContext,
     ConstExpr, ExprBoundaries, PhysicalExpr,
 };
+use futures::FutureExt;
 
+use crate::r#yield::PollBudget;
 use datafusion_physical_expr_common::physical_expr::fmt_sql;
 use futures::stream::{Stream, StreamExt};
 use itertools::Itertools;
@@ -387,10 +389,12 @@ impl ExecutionPlan for FilterExec {
     ) -> Result<SendableRecordBatchStream> {
         trace!("Start FilterExec::execute for partition {} of context session_id {} and task_id {:?}", partition, context.session_id(), context.task_id());
         let baseline_metrics = BaselineMetrics::new(&self.metrics, partition);
+        let poll_budget = PollBudget::from(context.as_ref());
         Ok(Box::pin(FilterExecStream {
             schema: self.schema(),
             predicate: Arc::clone(&self.predicate),
             input: self.input.execute(partition, context)?,
+            poll_budget,
             baseline_metrics,
             projection: self.projection.clone(),
         }))
@@ -635,6 +639,7 @@ struct FilterExecStream {
     predicate: Arc<dyn PhysicalExpr>,
     /// The input partition to filter.
     input: SendableRecordBatchStream,
+    poll_budget: PollBudget,
     /// Runtime metrics recording
     baseline_metrics: BaselineMetrics,
     /// The projection indices of the columns in the input schema
@@ -688,6 +693,7 @@ impl Stream for FilterExecStream {
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<Option<Self::Item>> {
+        let mut consume_budget = self.poll_budget.consume_budget();
         let poll;
         loop {
             match ready!(self.input.poll_next_unpin(cx)) {
@@ -702,6 +708,7 @@ impl Stream for FilterExecStream {
                     timer.done();
                     // Skip entirely filtered batches
                     if filtered_batch.num_rows() == 0 {
+                        ready!(consume_budget.poll_unpin(cx));
                         continue;
                     }
                     poll = Poll::Ready(Some(Ok(filtered_batch)));

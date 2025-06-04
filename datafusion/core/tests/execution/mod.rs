@@ -17,3 +17,4 @@
 
 mod infinite_cancel;
 mod logical_plan;
+mod yielding;
