@@ -98,3 +98,81 @@ Every long-running operation must periodically yield control back to the schedul
 
 Unfortunately, not all parts of DataFusion currently do this consistently.
 This document outlines our current approach to this problem and explores potential solutions to make DataFusion queries properly cancellable in all scenarios.
+
+## Current state of affairs
+
+### Seeing the Problem in Action: A Typical Blocking Operator
+
+Let's examine a real-world example to better understand the cancellation challenge.
+Here's a simplified implementation of a `COUNT(*)` aggregation - something you might use in a query like `SELECT COUNT(*) FROM table`:
+
+```rust
+struct BlockingStream {
+    stream: SendableRecordBatchStream,
+    count: usize,
+    finished: bool,
+}
+
+impl Stream for BlockingStream {
+    type Item = Result<RecordBatch>;
+    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        if self.finished {
+            return Poll::Ready(None);
+        }
+
+        loop {
+            match ready!(self.stream.poll_next_unpin(cx)) {
+                None => {
+                    self.finished = true;
+                    return Poll::Ready(Some(Ok(create_record_batch(self.count))));
+                }
+                Some(Ok(batch)) => self.count += batch.num_rows(),
+                Some(Err(e)) => return Poll::Ready(Some(Err(e))),
+            }
+        }
+    }
+}
+```
+
+How does this code work? Let's break it down step by step:
+
+1. **Initial check**: We first check if we've already finished processing. If so, we return `Ready(None)` to signal the end of our stream:
+   ```rust
+   if self.finished {
+       return Poll::Ready(None);
+   }
+   ```
+
+2. **Processing loop**: We then enter a loop to process all incoming batches from our child stream:
+   ```rust
+   loop {
+       match ready!(self.stream.poll_next_unpin(cx)) {
+           // Handle different cases...
+       }
+   }
+   ```
+   The `ready!` macro checks if the child stream returned `Pending` and if so, immediately returns `Pending` from our function too.
+
+3. **End of input**: When the child stream is exhausted (returns `None`), we calculate our final result:
+   ```rust
+   None => {
+       self.finished = true;
+       return Poll::Ready(Some(Ok(create_record_batch(self.count))));
+   }
+   ```
+
+4. **Processing data**: For each batch we receive, we simply add its row count to our running total:
+   ```rust
+   Some(Ok(batch)) => self.count += batch.num_rows(),
+   ```
+
+5. **Error handling**: If we encounter an error, we pass it along immediately:
+   ```rust
+   Some(Err(e)) => return Poll::Ready(Some(Err(e))),
+   ```
+
+This code looks perfectly reasonable at first glance.
+But there's a subtle issue lurking here: what happens if the child stream processes a large amount of data without ever returning `Pending`?
+
+In that case, our loop will keep running without ever yielding control back to Tokio's scheduler.
+This means we could be stuck in a single `poll_next` call for minutes or even hours - exactly the scenario that prevents query cancellation from working!
