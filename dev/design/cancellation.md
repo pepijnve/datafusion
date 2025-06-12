@@ -1,96 +1,100 @@
 # Query Cancellation
 
-## Problem Statement
+## The Challenge of Cancelling Long-Running Queries
 
-Asynchronous code in Rust is modeled using the `Future<T>` trait.
-Contrary to some other ecosystems, a `Future<T>` does not represent code that is actively run on some other thread.
-Instead, it represents the lazy calculation of some value as a single method named `poll`.
-Calling the `poll` function of a `Future<T>` represents the action of advancing the lazy calculation either fully or partially.
-A partial evaluation is represented using the return value `Poll::Pending`.
-For the final evaluated result `Poll::Ready<T>` is used.
-When a future returns `Pending`, the internal state of the future implementation will have been updated to represent the state where the evaluation stopped.
-This internal state is used to resume the evaluation the next time `poll` is called.
+Have you ever tried to cancel a query that just wouldn't stop? This document explores why that happens in DataFusion and what we can do about it.
 
-Rust also supports an `async` keyword which can be assigned to functions, closures and blocks.
-The translation is not exactly one-to-one, but a good enough mental model is that the compiler will translate both async functions and blocks into anonymous implementations of `Future`.
-That makes the two more or less interchangeable.
+### Understanding Rust's Async Model
 
-A second related keyword is `await`.
-Within an `async` scope, `.await` can be appended to any async item or `Future` to poll it.
-Again not 100% accurate, but this is more or less the equivalent to `ready!(item.poll())`.
+Rust's asynchronous programming model is built around the `Future<T>` trait, which works quite differently from async models in other languages.
+Unlike systems where async code runs continuously on background threads, a Rust `Future<T>` represents a lazy calculation that only makes progress when explicitly polled.
 
-The `futures` crate extends the lazy evaluation model of `Future<T>` with a trait named `Stream` which represents a lazily evaluated sequence of values rather than just a single value.
-`Stream` also has a single method `poll_next` which returns `Poll<Option<T>`.
-Just like in `Future`, `Pending` signals that the next value of the sequence has not been fully evaluated.
-One or more followup calls to `poll_next` is required to proceed.
-`Ready(Some(_))` represent a fully evaluated value of the sequence.
-`Ready(None)` signals the end of the sequence.
+When you call the `poll` function on a `Future<T>`, you're asking it to advance its calculation as much as possible.
+The future responds with either:
+- `Poll::Pending` if it needs to wait for something (like I/O) before continuing
+- `Poll::Ready<T>` when it has completed and produced a value
 
-In DataFusion a query is first compiled to a tree of `ExecutionPlan` instances with a single root.
-The query is executed by calling `ExecutionPlan::execute` which returns a `SendableRecordBatchStream` instance.
-Simplifying a bit, `SendableRecordBatchStream` is a type alias for `Box<dyn Stream<RecordBatch>>`.
-In other words, 'executing' a query results in a lazily evaluated sequence of `RecordBatch`, with a type that is not known at compile time.
-The returned stream will typically be the root of a tree of `Box<dyn Stream<RecordBatch>>` where each child represents the input stream of rows that are processed by the parent.
+When a future returns `Pending`, it saves its internal state so it can pick up where it left off the next time you poll it.
+This state management is what makes Rust's futures memory-efficient and composable.
 
-The query is progressively executed each time `Stream::poll_next` is called.
-Often the root stream will call `poll_next` on one of it's children, which may in turn do the same, and so on.
-If somewhere in this chain of `poll_next` calls a pipeline blocking operation is encountered (aggregate, sort, some joins during their build phase, ...) the call to `poll_next` may have to perform work that takes a substantial amount of time before it can actually return a `RecordBatch`.
-We'll come back to this in a minute.
+Rust's `async` keyword provides syntactic sugar over this model.
+When you write an `async` function or block, the compiler transforms it into an implementation of the `Future` trait.
+This transformation makes async code much more readable while maintaining the same underlying mechanics.
 
-DataFusion runs in the context of the Tokio asynchronous runtime environment.
-In Tokio a task is an asynchronous green thread.
-Tasks are executed by a cooperative scheduler which makes use of a fixed size pool of operating system threads to do the actual work.
+The `await` keyword complements this by letting you pause execution until a future completes.
+When you write `.await` after a future, you're essentially telling the compiler to poll that future until it's ready, and then continue with the result.
 
-Cooperative scheduling is in contrast to preemptive scheduling.
-A preemptive scheduler has the ability to suspend a running task while it is active and switch to a different task.
-A cooperative scheduler on the other hand requires that each task periodically, and explicitly yields to the scheduler.
-The scheduler can only make scheduling decisions when a task yields.
+### From Futures to Streams
 
-Another consequence of cooperative scheduling is that tasks cannot be aborted while they are actively running.
-When a task is spawned, Tokio returns a `JoinHandle` to the caller which represent a handle to the running task.
-Calling `JoinHandle::abort` on this handle signals to the Tokio schedule that the task should be aborted.
-Tokio will do whatever bookkeeping it needs to do to mark the task as aborted, but it will not forcibly terminate the operating system thread running the task if it's currently executing the task in question.
-Instead, the scheduler will wait for the task to yield to the scheduler and only then will the task be discarded.
+The `futures` crate extends this model with the `Stream` trait, which represents a sequence of values produced asynchronously rather than just a single value.
+A `Stream` has a `poll_next` method that returns:
+- `Poll::Pending` when the next value isn't ready yet
+- `Poll::Ready(Some(value))` when a new value is available
+- `Poll::Ready(None)` when the stream is exhausted
 
-Coming back to DataFusion query execution now.
-DataFusion queries are typically executed either using `tokio::runtime::Runtime::spawn` or `tokio::runtime::Runtime::block_on`.
-For this discussion we'll look at `block_on`; `spawn` can be treated the same way.
+### How DataFusion Executes Queries
 
-The code snippet below paraphrases the query execution logic of the DataFusion CLI.
-`next()` is an async wrapper around `poll_next`.
-`signal::ctrl_c()` is an async function that completes when the process receives the `SIGINT` signal from the operating system.
-`select!` polls each expression it is given until one completes.
-Keep in mind that `select!` still needs to play by the cooperative scheduling rules described above.
-It will not call `poll` on the two `Future` instance in parallel.
-Instead, it calls it on each one sequentially, one after the other.
-The first function call needs to return before the second one can start.
+In DataFusion, query execution follows this async pattern.
+When you run a query:
+
+1. The query is compiled into a tree of `ExecutionPlan` nodes
+2. Calling `ExecutionPlan::execute` returns a `SendableRecordBatchStream` (essentially a `Box<dyn Stream<RecordBatch>>`)
+3. This stream is actually the root of a tree of streams where each node processes data from its children
+
+Query execution progresses each time you call `poll_next` on the root stream.
+This call typically cascades down the tree, with each node calling `poll_next` on its children to get the data it needs to process.
+
+Here's where things get tricky: some operations (like aggregations, sorts, or certain join phases) need to process a lot of data before producing any output.
+When `poll_next` encounters one of these operations, it might need to do substantial work before returning.
+
+### Tokio and Cooperative Scheduling
+
+DataFusion runs on top of Tokio, which uses a cooperative scheduling model.
+This is fundamentally different from preemptive scheduling:
+
+- In preemptive scheduling, the system can interrupt a task at any time to run something else
+- In cooperative scheduling, tasks must voluntarily yield control back to the scheduler
+
+This distinction is crucial for understanding our cancellation problem.
+When a Tokio task is running, it can't be forcibly interrupted - it must cooperate by periodically yielding control.
+
+When you call `JoinHandle::abort()` on a Tokio task, you're not immediately stopping it. You're just telling Tokio: "When this task next yields control, don't resume it."
+If the task never yields, it can't be cancelled.
+
+### The Cancellation Problem
+
+Let's look at how the DataFusion CLI tries to handle query cancellation.
+The code below paraphrases what the CLI actually does:
 
 ```rust
 fn exec_query() {
     let runtime: tokio::runtime::Runtime = ...;
     let stream: SendableRecordBatchStream = ...;
     let cancellation_token = CancellationToken::new();
-    
+
     runtime.block_on(async {
         tokio::select! {
             next_batch = stream.next() => ...
-            _ = _ = signal::ctrl_c() => ...,
+            _ = signal::ctrl_c() => ...,
         }
     })
 }
 ```
 
-Imagine the query in question contains a long running, pipeline blocking operation.
-What is going to happen when I now press ctrl-C?
-The intended behavior is the `select!` completes, the `block_on` call returns, and the `exec_query` function exits.
+The `select!` macro is supposed to race these two futures and complete when either one finishes.
+When you press Ctrl+C, the `signal::ctrl_c()` future should complete, allowing the query to be cancelled.
 
-But what would happen if the query contains an operator that is, for instance, calculating the billionth digit of pi?
-The `poll_next` call on that stream may not return for a couple of hours.
-In the meantime, Tokio has no way to actually poll the `ctrl_c` future, not can the `select!` macro return a value.
-We effectively cannot cancel this query.
+But there's a catch: `select!` still follows cooperative scheduling rules.
+It polls each future in sequence, and if the first one (our query) gets stuck in a long computation, it never gets around to polling the cancellation signal.
 
-Because the Tokio environment is cooperative by design, and DataFusion runs in the context of Tokio, DataFusion needs to cooperate as well.
-All parts of the library need to be aligned to ensure calls to `poll_next` on the `Stream` instances it creates do not block for an extended period of time.
-Unfortunately, today that is not always the case in practice.
-This document describes the current state of measures in the codebase to achieve this goal.
-It also investigate possible future solutions to improve upon the current state.
+Imagine a query that needs to calculate something intensive, like sorting billions of rows.
+The `poll_next` call might run for hours without returning.
+During this time, Tokio can't check if you've pressed Ctrl+C, and the query continues running despite your cancellation request.
+
+### The Path Forward
+
+Since DataFusion runs in Tokio's cooperative environment, we need to ensure all our operations play by the rules.
+Every long-running operation must periodically yield control back to the scheduler, allowing cancellation checks to happen.
+
+Unfortunately, not all parts of DataFusion currently do this consistently.
+This document outlines our current approach to this problem and explores potential solutions to make DataFusion queries properly cancellable in all scenarios.
