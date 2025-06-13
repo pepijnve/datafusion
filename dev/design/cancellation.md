@@ -99,9 +99,9 @@ Every long-running operation must periodically yield control back to the schedul
 Unfortunately, not all parts of DataFusion currently do this consistently.
 This document outlines our current approach to this problem and explores potential solutions to make DataFusion queries properly cancellable in all scenarios.
 
-## Current state of affairs
+## Seeing the Problem in Action
 
-### Seeing the Problem in Action: A Typical Blocking Operator
+### A Typical Blocking Operator
 
 Let's examine a real-world example to better understand the cancellation challenge.
 Here's a simplified implementation of a `COUNT(*)` aggregation - something you might use in a query like `SELECT COUNT(*) FROM table`:
@@ -176,3 +176,40 @@ But there's a subtle issue lurking here: what happens if the child stream proces
 
 In that case, our loop will keep running without ever yielding control back to Tokio's scheduler.
 This means we could be stuck in a single `poll_next` call for minutes or even hours - exactly the scenario that prevents query cancellation from working!
+
+### The bigger picture
+
+Remember that query streams are just the tip of an iceberg (or should )
+
+
+## How can we fix this?
+
+It's essential that we return `Pending` every now and then.
+There are a number of ways we can achieve this each with its own strengths and weaknesses.
+Let's go over these.
+
+### Being a responsible citizen 
+
+One simple way to achieve this is using a loop counter.
+We do the exact same thing as before, but on each loop iteration we decrement our counter.
+If the counter hits zero we return `Pending`.
+This ensures we iterate at most 128 times before yielding.
+
+```rust
+fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+    if self.finished {
+        return Poll::Ready(None);
+    }
+
+    let mut counter = 128;
+    loop {
+        match ready!(self.stream.poll_next_unpin(cx)) {
+            ...
+        }
+        counter -= 1;
+        if counter == 0 {
+            return Poll::Pending;
+        }
+    }
+}
+```
