@@ -54,6 +54,10 @@ enum Options {
 // Main benchmark runner entrypoint
 #[tokio::main]
 pub async fn main() -> Result<()> {
+    #[cfg(feature = "tokio_console")]
+    {
+        console_subscriber::init();
+    }
     env_logger::init();
 
     match Options::from_args() {

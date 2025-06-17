@@ -31,11 +31,13 @@ workspace = true
 
 [features]
 ci = []
-default = ["mimalloc"]
+default = ["mimalloc", "tokio_console"]
 snmalloc = ["snmalloc-rs"]
+tokio_console = ["dep:console-subscriber", "tokio/tracing"]
 
 [dependencies]
 arrow = { workspace = true }
+console-subscriber = { version = "0.4.1", optional = true }
 datafusion = { workspace = true, default-features = true }
 datafusion-common = { workspace = true, default-features = true }
 env_logger = { workspace = true }
@@ -52,6 +54,7 @@ structopt = { version = "0.3", default-features = false }
 test-utils = { path = "../test-utils/", version = "0.1.0" }
 tokio = { workspace = true, features = ["rt-multi-thread", "parking_lot"] }
 tokio-util = { version = "0.7.15" }
+
 
 [dev-dependencies]
 datafusion-proto = { workspace = true }
