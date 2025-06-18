@@ -33,8 +33,10 @@ use parquet::file::metadata::{ParquetMetaData, ParquetMetaDataReader};
 use parquet::file::reader::Length;
 use std::fmt::Debug;
 use std::fs::File;
-use std::io::{Read, Seek, SeekFrom};
+use std::io::{Error, Read, Seek, SeekFrom};
 use std::ops::Range;
+use std::os::fd::AsFd;
+use std::os::unix::fs::FileExt;
 use std::sync::{Arc, Mutex};
 
 /// Interface for reading parquet files.
@@ -153,13 +155,13 @@ where
 }
 
 struct StdFileReader {
-    file: Arc<Mutex<File>>,
+    file: Arc<File>,
     file_size: u64,
     metadata_size_hint: Option<usize>,
 }
 
 fn read_range(
-    file: &mut File,
+    file: &File,
     file_size: u64,
     range: Range<u64>,
 ) -> parquet::errors::Result<Bytes> {
@@ -168,21 +170,11 @@ fn read_range(
     }
 
     // Don't read past end of file
-    let to_read = range.end.min(file_size) - range.start;
+    let to_read = (range.end.min(file_size) - range.start) as usize;
 
-    file.seek(SeekFrom::Start(range.start))
-        .map_err(|source| ParquetError::External(Box::new(source)))?;
-
-    let mut buf = Vec::with_capacity(to_read as usize);
-    let read =
-        file.take(to_read)
-            .read_to_end(&mut buf)
-            .map_err(|source| ParquetError::External(Box::new(source)))? as u64;
-
-    if read != to_read {
-        return Err(ParquetError::EOF("".to_string()));
-    }
-
+    let mut buf = Vec::with_capacity(to_read);
+    unsafe { buf.set_len(to_read); }
+    file.read_exact_at(&mut buf, range.start)?;
     Ok(buf.into())
 }
 
@@ -197,8 +189,7 @@ impl AsyncFileReader for StdFileReader {
                 let file_size = self.file_size;
                 let res = runtime
                     .spawn_blocking(move || {
-                        let mut f = file.lock().unwrap();
-                        read_range(&mut f, file_size, range)
+                        read_range(&file, file_size, range)
                     })
                     .unwrap_or_else(|err| Err(ParquetError::External(Box::new(err))))
                     .boxed();
@@ -220,10 +211,9 @@ impl AsyncFileReader for StdFileReader {
                 let file_size = self.file_size;
                 let res = runtime
                     .spawn_blocking(move || {
-                        let mut f = file.lock().unwrap();
                         let mut byte_ranges = vec![];
                         for range in ranges {
-                            byte_ranges.push(read_range(&mut f, file_size, range)?)
+                            byte_ranges.push(read_range(&file, file_size, range)?)
                         }
                         Ok(byte_ranges)
                     })
@@ -307,7 +297,7 @@ impl ParquetFileReaderFactory for DefaultParquetFileReaderFactory {
         let file_size = file.len();
 
         let reader = StdFileReader {
-            file: Arc::new(Mutex::new(file)),
+            file: Arc::new(file),
             file_size,
             metadata_size_hint,
         };
