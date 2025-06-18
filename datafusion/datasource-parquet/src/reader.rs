@@ -20,16 +20,22 @@
 
 use crate::ParquetFileMetrics;
 use bytes::Bytes;
+use datafusion_common::DataFusionError;
 use datafusion_datasource::file_meta::FileMeta;
 use datafusion_physical_plan::metrics::ExecutionPlanMetricsSet;
 use futures::future::BoxFuture;
-use object_store::ObjectStore;
+use futures::{FutureExt, TryFutureExt};
+use object_store::DynObjectStore;
 use parquet::arrow::arrow_reader::ArrowReaderOptions;
 use parquet::arrow::async_reader::{AsyncFileReader, ParquetObjectReader};
-use parquet::file::metadata::ParquetMetaData;
+use parquet::errors::ParquetError;
+use parquet::file::metadata::{ParquetMetaData, ParquetMetaDataReader};
+use parquet::file::reader::Length;
 use std::fmt::Debug;
+use std::fs::File;
+use std::io::{Read, Seek, SeekFrom};
 use std::ops::Range;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 /// Interface for reading parquet files.
 ///
@@ -55,11 +61,30 @@ pub trait ParquetFileReaderFactory: Debug + Send + Sync + 'static {
     /// * metrics - Execution metrics
     fn create_reader(
         &self,
+        store: Arc<DynObjectStore>,
         partition_index: usize,
         file_meta: FileMeta,
         metadata_size_hint: Option<usize>,
         metrics: &ExecutionPlanMetricsSet,
     ) -> datafusion_common::Result<Box<dyn AsyncFileReader + Send>>;
+
+    fn create_file_reader(
+        &self,
+        _: File,
+        store: Arc<DynObjectStore>,
+        partition_index: usize,
+        file_meta: FileMeta,
+        metadata_size_hint: Option<usize>,
+        metrics: &ExecutionPlanMetricsSet,
+    ) -> datafusion_common::Result<Box<dyn AsyncFileReader + Send>> {
+        self.create_reader(
+            store,
+            partition_index,
+            file_meta,
+            metadata_size_hint,
+            metrics,
+        )
+    }
 }
 
 /// Default implementation of [`ParquetFileReaderFactory`]
@@ -69,14 +94,12 @@ pub trait ParquetFileReaderFactory: Debug + Send + Sync + 'static {
 /// 2. Reads the footer and page metadata on demand.
 /// 3. Does not cache metadata or coalesce I/O operations.
 #[derive(Debug)]
-pub struct DefaultParquetFileReaderFactory {
-    store: Arc<dyn ObjectStore>,
-}
+pub struct DefaultParquetFileReaderFactory {}
 
 impl DefaultParquetFileReaderFactory {
     /// Create a new `DefaultParquetFileReaderFactory`.
-    pub fn new(store: Arc<dyn ObjectStore>) -> Self {
-        Self { store }
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
@@ -88,12 +111,18 @@ impl DefaultParquetFileReaderFactory {
 /// This implementation does not coalesce I/O operations or cache bytes. Such
 /// optimizations can be done either at the object store level or by providing a
 /// custom implementation of [`ParquetFileReaderFactory`].
-pub(crate) struct ParquetFileReader {
+pub(crate) struct ParquetFileReader<T>
+where
+    T: AsyncFileReader,
+{
     pub file_metrics: ParquetFileMetrics,
-    pub inner: ParquetObjectReader,
+    pub inner: T,
 }
 
-impl AsyncFileReader for ParquetFileReader {
+impl<T> AsyncFileReader for ParquetFileReader<T>
+where
+    T: AsyncFileReader,
+{
     fn get_bytes(
         &mut self,
         range: Range<u64>,
@@ -123,9 +152,118 @@ impl AsyncFileReader for ParquetFileReader {
     }
 }
 
+struct StdFileReader {
+    file: Arc<Mutex<File>>,
+    file_size: u64,
+    metadata_size_hint: Option<usize>,
+}
+
+fn read_range(
+    file: &mut File,
+    file_size: u64,
+    range: Range<u64>,
+) -> parquet::errors::Result<Bytes> {
+    if range.start >= file_size {
+        return Err(ParquetError::EOF("".to_string()));
+    }
+
+    // Don't read past end of file
+    let to_read = range.end.min(file_size) - range.start;
+
+    file.seek(SeekFrom::Start(range.start))
+        .map_err(|source| ParquetError::External(Box::new(source)))?;
+
+    let mut buf = Vec::with_capacity(to_read as usize);
+    let read =
+        file.take(to_read)
+            .read_to_end(&mut buf)
+            .map_err(|source| ParquetError::External(Box::new(source)))? as u64;
+
+    if read != to_read {
+        return Err(ParquetError::EOF("".to_string()));
+    }
+
+    Ok(buf.into())
+}
+
+impl AsyncFileReader for StdFileReader {
+    fn get_bytes(
+        &mut self,
+        range: Range<u64>,
+    ) -> BoxFuture<'_, parquet::errors::Result<Bytes>> {
+        match tokio::runtime::Handle::try_current() {
+            Ok(runtime) => {
+                let file = Arc::clone(&self.file);
+                let file_size = self.file_size;
+                let res = runtime
+                    .spawn_blocking(move || {
+                        let mut f = file.lock().unwrap();
+                        read_range(&mut f, file_size, range)
+                    })
+                    .unwrap_or_else(|err| Err(ParquetError::External(Box::new(err))))
+                    .boxed();
+                res
+            }
+            Err(err) => {
+                futures::future::ready(Err(ParquetError::External(Box::new(err)))).boxed()
+            }
+        }
+    }
+
+    fn get_byte_ranges(
+        &mut self,
+        ranges: Vec<Range<u64>>,
+    ) -> BoxFuture<'_, parquet::errors::Result<Vec<Bytes>>> {
+        match tokio::runtime::Handle::try_current() {
+            Ok(runtime) => {
+                let file = Arc::clone(&self.file);
+                let file_size = self.file_size;
+                let res = runtime
+                    .spawn_blocking(move || {
+                        let mut f = file.lock().unwrap();
+                        let mut byte_ranges = vec![];
+                        for range in ranges {
+                            byte_ranges.push(read_range(&mut f, file_size, range)?)
+                        }
+                        Ok(byte_ranges)
+                    })
+                    .unwrap_or_else(|err| Err(ParquetError::External(Box::new(err))))
+                    .boxed();
+                res
+            }
+            Err(err) => {
+                futures::future::ready(Err(ParquetError::External(Box::new(err)))).boxed()
+            }
+        }
+    }
+
+    fn get_metadata(
+        &mut self,
+        _options: Option<&ArrowReaderOptions>,
+    ) -> BoxFuture<'_, parquet::errors::Result<Arc<ParquetMetaData>>> {
+        Box::pin(async move {
+            let file_size = self.file_size;
+
+            let metadata = ParquetMetaDataReader::new()
+                .with_prefetch_hint(self.metadata_size_hint)
+                .load_and_finish(self, file_size)
+                .await
+                .map_err(DataFusionError::from)
+                .map_err(|e| {
+                    ParquetError::General(format!(
+                        "AsyncChunkReader::get_metadata error: {e}"
+                    ))
+                })?;
+
+            Ok(Arc::new(metadata))
+        })
+    }
+}
+
 impl ParquetFileReaderFactory for DefaultParquetFileReaderFactory {
     fn create_reader(
         &self,
+        store: Arc<DynObjectStore>,
         partition_index: usize,
         file_meta: FileMeta,
         metadata_size_hint: Option<usize>,
@@ -136,9 +274,10 @@ impl ParquetFileReaderFactory for DefaultParquetFileReaderFactory {
             file_meta.location().as_ref(),
             metrics,
         );
-        let store = Arc::clone(&self.store);
-        let mut inner = ParquetObjectReader::new(store, file_meta.object_meta.location)
-            .with_file_size(file_meta.object_meta.size);
+
+        let mut inner =
+            ParquetObjectReader::new(store, file_meta.object_meta.location.clone())
+                .with_file_size(file_meta.object_meta.size);
 
         if let Some(hint) = metadata_size_hint {
             inner = inner.with_footer_size_hint(hint)
@@ -146,6 +285,35 @@ impl ParquetFileReaderFactory for DefaultParquetFileReaderFactory {
 
         Ok(Box::new(ParquetFileReader {
             inner,
+            file_metrics,
+        }))
+    }
+
+    fn create_file_reader(
+        &self,
+        file: File,
+        _: Arc<DynObjectStore>,
+        partition_index: usize,
+        file_meta: FileMeta,
+        metadata_size_hint: Option<usize>,
+        metrics: &ExecutionPlanMetricsSet,
+    ) -> datafusion_common::Result<Box<dyn AsyncFileReader + Send>> {
+        let file_metrics = ParquetFileMetrics::new(
+            partition_index,
+            file_meta.location().as_ref(),
+            metrics,
+        );
+
+        let file_size = file.len();
+
+        let reader = StdFileReader {
+            file: Arc::new(Mutex::new(file)),
+            file_size,
+            metadata_size_hint,
+        };
+
+        Ok(Box::new(ParquetFileReader {
+            inner: reader,
             file_metrics,
         }))
     }

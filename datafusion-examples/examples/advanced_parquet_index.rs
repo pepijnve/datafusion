@@ -164,7 +164,7 @@ async fn main() -> Result<()> {
         Arc::new(object_store::local::LocalFileSystem::new());
 
     // Create a custom table provider with our special index.
-    let provider = Arc::new(IndexTableProvider::try_new(Arc::clone(&object_store))?);
+    let provider = Arc::new(IndexTableProvider::try_new()?);
 
     // SessionContext for running queries that has the table provider
     // registered as "index_table"
@@ -235,15 +235,12 @@ pub struct IndexTableProvider {
     _tmpdir: TempDir,
     /// The file that is being read.
     indexed_file: IndexedFile,
-    /// The underlying object store
-    object_store: Arc<dyn ObjectStore>,
     /// if true, use row selections in addition to row group selections
     use_row_selections: AtomicBool,
 }
 impl IndexTableProvider {
     /// Create a new IndexTableProvider
-    /// * `object_store` - the object store implementation to use for reading files
-    pub fn try_new(object_store: Arc<dyn ObjectStore>) -> Result<Self> {
+    pub fn try_new() -> Result<Self> {
         let tmpdir = TempDir::new().expect("Can't make temporary directory");
 
         let indexed_file =
@@ -252,7 +249,6 @@ impl IndexTableProvider {
         Ok(Self {
             indexed_file,
             _tmpdir: tmpdir,
-            object_store,
             use_row_selections: AtomicBool::new(false),
         })
     }
@@ -488,8 +484,7 @@ impl TableProvider for IndexTableProvider {
 
         // Configure a factory interface to avoid re-reading the metadata for each file
         let reader_factory =
-            CachedParquetFileReaderFactory::new(Arc::clone(&self.object_store))
-                .with_file(indexed_file);
+            CachedParquetFileReaderFactory::new().with_file(indexed_file);
 
         let file_source = Arc::new(
             ParquetSource::default()
@@ -527,17 +522,14 @@ impl TableProvider for IndexTableProvider {
 
 #[derive(Debug)]
 struct CachedParquetFileReaderFactory {
-    /// The underlying object store implementation for reading file data
-    object_store: Arc<dyn ObjectStore>,
     /// The parquet metadata for each file in the index, keyed by the file name
     /// (e.g. `file1.parquet`)
     metadata: HashMap<String, Arc<ParquetMetaData>>,
 }
 
 impl CachedParquetFileReaderFactory {
-    fn new(object_store: Arc<dyn ObjectStore>) -> Self {
+    fn new() -> Self {
         Self {
-            object_store,
             metadata: HashMap::new(),
         }
     }
@@ -554,6 +546,7 @@ impl CachedParquetFileReaderFactory {
 impl ParquetFileReaderFactory for CachedParquetFileReaderFactory {
     fn create_reader(
         &self,
+        store: Arc<dyn ObjectStore>,
         _partition_index: usize,
         file_meta: FileMeta,
         metadata_size_hint: Option<usize>,
@@ -570,10 +563,8 @@ impl ParquetFileReaderFactory for CachedParquetFileReaderFactory {
             .as_ref()
             .to_string();
 
-        let object_store = Arc::clone(&self.object_store);
-        let mut inner =
-            ParquetObjectReader::new(object_store, file_meta.object_meta.location)
-                .with_file_size(file_meta.object_meta.size);
+        let mut inner = ParquetObjectReader::new(store, file_meta.object_meta.location)
+            .with_file_size(file_meta.object_meta.size);
 
         if let Some(hint) = metadata_size_hint {
             inner = inner.with_footer_size_hint(hint)

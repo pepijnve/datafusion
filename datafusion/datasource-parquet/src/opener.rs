@@ -44,6 +44,7 @@ use datafusion_physical_plan::metrics::{Count, ExecutionPlanMetricsSet, MetricBu
 use futures::{StreamExt, TryStreamExt};
 use itertools::Itertools;
 use log::debug;
+use object_store::{GetOptions, GetResultPayload, ObjectStore};
 use parquet::arrow::arrow_reader::{ArrowReaderMetadata, ArrowReaderOptions};
 use parquet::arrow::async_reader::AsyncFileReader;
 use parquet::arrow::{ParquetRecordBatchStreamBuilder, ProjectionMask};
@@ -51,6 +52,7 @@ use parquet::file::metadata::ParquetMetaDataReader;
 
 /// Implements [`FileOpener`] for a parquet file
 pub(super) struct ParquetOpener {
+    pub store: Arc<dyn ObjectStore>,
     /// Execution partition index
     pub partition_index: usize,
     /// Column indexes in `table_schema` needed by the query
@@ -105,13 +107,9 @@ impl FileOpener for ParquetOpener {
 
         let metadata_size_hint = file_meta.metadata_size_hint.or(self.metadata_size_hint);
 
-        let mut async_file_reader: Box<dyn AsyncFileReader> =
-            self.parquet_file_reader_factory.create_reader(
-                self.partition_index,
-                file_meta.clone(),
-                metadata_size_hint,
-                &self.metrics,
-            )?;
+        let reader_factory = Arc::clone(&self.parquet_file_reader_factory);
+        let partition_index = self.partition_index;
+        let metrics_set = self.metrics.clone();
 
         let batch_size = self.batch_size;
 
@@ -132,8 +130,38 @@ impl FileOpener for ParquetOpener {
         let limit = self.limit;
 
         let enable_page_index = self.enable_page_index;
+        let object_store = self.store.clone();
 
         Ok(Box::pin(async move {
+            let get_result = object_store
+                .get_opts(
+                    file_meta.location(),
+                    GetOptions {
+                        head: true,
+                        ..Default::default()
+                    },
+                )
+                .await?;
+
+            let mut async_file_reader: Box<dyn AsyncFileReader> = match get_result.payload
+            {
+                GetResultPayload::File(file, _) => reader_factory.create_file_reader(
+                    file,
+                    object_store,
+                    partition_index,
+                    file_meta.clone(),
+                    metadata_size_hint,
+                    &metrics_set,
+                )?,
+                GetResultPayload::Stream(_) => reader_factory.create_reader(
+                    object_store,
+                    partition_index,
+                    file_meta.clone(),
+                    metadata_size_hint,
+                    &metrics_set,
+                )?,
+            };
+
             // Prune this file using the file level statistics.
             // Since dynamic filters may have been updated since planning it is possible that we are able
             // to prune files now that we couldn't prune at planning time.
@@ -617,6 +645,7 @@ mod test {
 
         let make_opener = |predicate| {
             ParquetOpener {
+                store: Arc::clone(&store),
                 partition_index: 0,
                 projection: Arc::new([0, 1]),
                 batch_size: 1024,
@@ -626,7 +655,7 @@ mod test {
                 metadata_size_hint: None,
                 metrics: ExecutionPlanMetricsSet::new(),
                 parquet_file_reader_factory: Arc::new(
-                    DefaultParquetFileReaderFactory::new(Arc::clone(&store)),
+                    DefaultParquetFileReaderFactory::new(),
                 ),
                 partition_fields: vec![],
                 pushdown_filters: false, // note that this is false!
@@ -697,6 +726,7 @@ mod test {
 
         let make_opener = |predicate| {
             ParquetOpener {
+                store: Arc::clone(&store),
                 partition_index: 0,
                 projection: Arc::new([0]),
                 batch_size: 1024,
@@ -706,7 +736,7 @@ mod test {
                 metadata_size_hint: None,
                 metrics: ExecutionPlanMetricsSet::new(),
                 parquet_file_reader_factory: Arc::new(
-                    DefaultParquetFileReaderFactory::new(Arc::clone(&store)),
+                    DefaultParquetFileReaderFactory::new(),
                 ),
                 partition_fields: vec![Arc::new(Field::new(
                     "part",
@@ -793,6 +823,7 @@ mod test {
         ]));
         let make_opener = |predicate| {
             ParquetOpener {
+                store: Arc::clone(&store),
                 partition_index: 0,
                 projection: Arc::new([0]),
                 batch_size: 1024,
@@ -802,7 +833,7 @@ mod test {
                 metadata_size_hint: None,
                 metrics: ExecutionPlanMetricsSet::new(),
                 parquet_file_reader_factory: Arc::new(
-                    DefaultParquetFileReaderFactory::new(Arc::clone(&store)),
+                    DefaultParquetFileReaderFactory::new(),
                 ),
                 partition_fields: vec![Arc::new(Field::new(
                     "part",

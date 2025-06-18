@@ -43,7 +43,7 @@ use futures::{FutureExt, TryFutureExt};
 use insta::assert_snapshot;
 use object_store::memory::InMemory;
 use object_store::path::Path;
-use object_store::{ObjectMeta, ObjectStore};
+use object_store::{DynObjectStore, ObjectMeta, ObjectStore};
 use parquet::arrow::arrow_reader::ArrowReaderOptions;
 use parquet::arrow::async_reader::AsyncFileReader;
 use parquet::arrow::ArrowWriter;
@@ -53,7 +53,7 @@ use parquet::file::metadata::ParquetMetaData;
 const EXPECTED_USER_DEFINED_METADATA: &str = "some-user-defined-metadata";
 
 #[tokio::test]
-async fn route_data_access_ops_to_parquet_file_reader_factory() {
+async fn route_data_access_ops_to_parquet_file_reader_factory() -> Result<()> {
     let c1: ArrayRef = Arc::new(StringArray::from(vec![Some("Foo"), None, Some("bar")]));
     let c2: ArrayRef = Arc::new(Int64Array::from(vec![Some(1), Some(2), None]));
     let c3: ArrayRef = Arc::new(Int8Array::from(vec![Some(10), Some(20), None]));
@@ -67,6 +67,9 @@ async fn route_data_access_ops_to_parquet_file_reader_factory() {
     let file_schema = batch.schema().clone();
     let (in_memory_object_store, parquet_files_meta) =
         store_parquet_in_memory(vec![batch]).await;
+    
+    
+    
     let file_group = parquet_files_meta
         .into_iter()
         .map(|meta| PartitionedFile {
@@ -83,12 +86,14 @@ async fn route_data_access_ops_to_parquet_file_reader_factory() {
         ParquetSource::default()
             // prepare the scan
             .with_parquet_file_reader_factory(Arc::new(
-                InMemoryParquetFileReaderFactory(Arc::clone(&in_memory_object_store)),
+                InMemoryParquetFileReaderFactory(),
             )),
     );
+
+    let object_store_url = ObjectStoreUrl::parse("memory://")?;
+    
     let base_config = FileScanConfigBuilder::new(
-        // just any url that doesn't point to in memory object store
-        ObjectStoreUrl::local_filesystem(),
+        object_store_url.clone(),
         file_schema,
         source,
     )
@@ -98,6 +103,7 @@ async fn route_data_access_ops_to_parquet_file_reader_factory() {
     let parquet_exec = DataSourceExec::from_data_source(base_config);
 
     let session_ctx = SessionContext::new();
+    session_ctx.register_object_store(object_store_url.as_ref(), in_memory_object_store);
     let task_ctx = session_ctx.task_ctx();
     let read = collect(parquet_exec, task_ctx).await.unwrap();
 
@@ -110,14 +116,17 @@ async fn route_data_access_ops_to_parquet_file_reader_factory() {
     | bar |    |    |
     +-----+----+----+
     ");
+    
+    Ok(())
 }
 
 #[derive(Debug)]
-struct InMemoryParquetFileReaderFactory(Arc<dyn ObjectStore>);
+struct InMemoryParquetFileReaderFactory();
 
 impl ParquetFileReaderFactory for InMemoryParquetFileReaderFactory {
     fn create_reader(
         &self,
+        store: Arc<DynObjectStore>,
         partition_index: usize,
         file_meta: FileMeta,
         metadata_size_hint: Option<usize>,
@@ -140,7 +149,7 @@ impl ParquetFileReaderFactory for InMemoryParquetFileReaderFactory {
         );
 
         Ok(Box::new(ParquetFileReader {
-            store: Arc::clone(&self.0),
+            store,
             meta: file_meta.object_meta,
             metrics: parquet_file_metrics,
             metadata_size_hint,

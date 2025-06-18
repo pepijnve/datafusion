@@ -470,10 +470,10 @@ impl FileSource for ParquetSource {
             .clone()
             .unwrap_or_else(|| Arc::new(DefaultSchemaAdapterFactory));
 
-        let parquet_file_reader_factory =
-            self.parquet_file_reader_factory.clone().unwrap_or_else(|| {
-                Arc::new(DefaultParquetFileReaderFactory::new(object_store)) as _
-            });
+        let parquet_file_reader_factory = self
+            .parquet_file_reader_factory
+            .clone()
+            .unwrap_or_else(|| Arc::new(DefaultParquetFileReaderFactory::new()) as _);
 
         let coerce_int96 = self
             .table_parquet_options
@@ -483,6 +483,7 @@ impl FileSource for ParquetSource {
             .map(|time_unit| parse_coerce_int96_string(time_unit.as_str()).unwrap());
 
         Arc::new(ParquetOpener {
+            store: object_store,
             partition_index: partition,
             projection: Arc::from(projection),
             batch_size: self

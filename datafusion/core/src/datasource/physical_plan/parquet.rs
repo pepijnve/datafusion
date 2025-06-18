@@ -75,7 +75,8 @@ mod tests {
     use insta::assert_snapshot;
     use object_store::local::LocalFileSystem;
     use object_store::path::Path;
-    use object_store::{ObjectMeta, ObjectStore};
+    use object_store::{DynObjectStore, ObjectMeta, ObjectStore};
+    use parquet::arrow::async_reader::AsyncFileReader;
     use parquet::arrow::ArrowWriter;
     use parquet::file::properties::WriterProperties;
     use tempfile::TempDir;
@@ -2129,9 +2130,9 @@ mod tests {
     }
 
     impl TrackingParquetFileReaderFactory {
-        fn new(store: Arc<dyn ObjectStore>) -> Self {
+        fn new() -> Self {
             Self {
-                inner: Arc::new(DefaultParquetFileReaderFactory::new(store)) as _,
+                inner: Arc::new(DefaultParquetFileReaderFactory::new()) as _,
                 metadata_size_hint_calls: Arc::new(Mutex::new(vec![])),
             }
         }
@@ -2140,17 +2141,42 @@ mod tests {
     impl ParquetFileReaderFactory for TrackingParquetFileReaderFactory {
         fn create_reader(
             &self,
+            store: Arc<dyn ObjectStore>,
             partition_index: usize,
             file_meta: FileMeta,
             metadata_size_hint: Option<usize>,
             metrics: &ExecutionPlanMetricsSet,
-        ) -> Result<Box<dyn parquet::arrow::async_reader::AsyncFileReader + Send>>
+        ) -> Result<Box<dyn AsyncFileReader + Send>>
         {
             self.metadata_size_hint_calls
                 .lock()
                 .unwrap()
                 .push(metadata_size_hint);
             self.inner.create_reader(
+                store,
+                partition_index,
+                file_meta,
+                metadata_size_hint,
+                metrics,
+            )
+        }
+
+        fn create_file_reader(
+            &self,
+            file: File,
+            store: Arc<DynObjectStore>,
+            partition_index: usize,
+            file_meta: FileMeta,
+            metadata_size_hint: Option<usize>,
+            metrics: &ExecutionPlanMetricsSet,
+        ) -> Result<Box<dyn AsyncFileReader + Send>> {
+            self.metadata_size_hint_calls
+                .lock()
+                .unwrap()
+                .push(metadata_size_hint);
+            self.inner.create_file_reader(
+                file,
+                store,
                 partition_index,
                 file_meta,
                 metadata_size_hint,
@@ -2179,7 +2205,7 @@ mod tests {
         let total_size_2 = write_batch(name_2, store.clone(), batch.clone()).await;
 
         let reader_factory =
-            Arc::new(TrackingParquetFileReaderFactory::new(store.clone()));
+            Arc::new(TrackingParquetFileReaderFactory::new());
 
         let size_hint_calls = reader_factory.metadata_size_hint_calls.clone();
 
