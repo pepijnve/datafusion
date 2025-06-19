@@ -116,7 +116,7 @@ async fn route_data_access_ops_to_parquet_file_reader_factory() -> Result<()> {
     | bar |    |    |
     +-----+----+----+
     ");
-    
+
     Ok(())
 }
 

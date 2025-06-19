@@ -2146,8 +2146,7 @@ mod tests {
             file_meta: FileMeta,
             metadata_size_hint: Option<usize>,
             metrics: &ExecutionPlanMetricsSet,
-        ) -> Result<Box<dyn AsyncFileReader + Send>>
-        {
+        ) -> Result<Box<dyn AsyncFileReader + Send>> {
             self.metadata_size_hint_calls
                 .lock()
                 .unwrap()
@@ -2204,8 +2203,7 @@ mod tests {
         let total_size_1 = write_batch(name_1, store.clone(), batch.clone()).await;
         let total_size_2 = write_batch(name_2, store.clone(), batch.clone()).await;
 
-        let reader_factory =
-            Arc::new(TrackingParquetFileReaderFactory::new());
+        let reader_factory = Arc::new(TrackingParquetFileReaderFactory::new());
 
         let size_hint_calls = reader_factory.metadata_size_hint_calls.clone();
 
