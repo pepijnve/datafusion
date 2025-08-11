@@ -295,11 +295,6 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="runtime_configs.html">
-   Runtime Environment Configurations
-  </a>
- </li>
- <li class="toctree-l1">
   <a class="reference internal" href="explain-usage.html">
    Reading Explain Plans
   </a>
@@ -319,6 +314,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../library-user-guide/index.html">
    Introduction
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../library-user-guide/upgrading.html">
+   Upgrade Guides
   </a>
  </li>
  <li class="toctree-l1">
@@ -357,10 +357,27 @@
    Catalogs, Schemas, and Tables
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../library-user-guide/adding-udfs.html">
-   Adding User Defined Functions: Scalar/Window/Aggregate/Table Functions
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../library-user-guide/functions/index.html">
+   Functions
   </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../library-user-guide/functions/adding-udfs.html">
+     Adding User Defined Functions: Scalar/Window/Aggregate/Table Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../library-user-guide/functions/spark.html">
+     Spark Compatible Functions
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../library-user-guide/custom-table-providers.html">
@@ -385,11 +402,6 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../library-user-guide/query-optimizer.html">
    DataFusion Query Optimizer
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../library-user-guide/upgrading.html">
-   Upgrade Guides
   </a>
  </li>
 </ul>
@@ -453,8 +465,8 @@
   <a class="reference internal" href="../contributor-guide/specification/index.html">
    Specifications
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
+  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -1330,11 +1342,11 @@ but these operators always return a <code class="docutils literal notranslate"><
 <tr class="row-even"><td><p>approx_median(expr)</p></td>
 <td><p>Calculates an approximation of the median for <code class="docutils literal notranslate"><span class="pre">expr</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p>approx_percentile_cont(expr, percentile)</p></td>
-<td><p>Calculates an approximation of the specified <code class="docutils literal notranslate"><span class="pre">percentile</span></code> for <code class="docutils literal notranslate"><span class="pre">expr</span></code>.</p></td>
+<tr class="row-odd"><td><p>approx_percentile_cont(expr, percentile [, centroids])</p></td>
+<td><p>Calculates an approximation of the specified <code class="docutils literal notranslate"><span class="pre">percentile</span></code> for <code class="docutils literal notranslate"><span class="pre">expr</span></code>. Optional <code class="docutils literal notranslate"><span class="pre">centroids</span></code> parameter controls accuracy (default: 100).</p></td>
 </tr>
-<tr class="row-even"><td><p>approx_percentile_cont_with_weight(expr, weight_expr, percentile)</p></td>
-<td><p>Calculates an approximation of the specified <code class="docutils literal notranslate"><span class="pre">percentile</span></code> for <code class="docutils literal notranslate"><span class="pre">expr</span></code> and <code class="docutils literal notranslate"><span class="pre">weight_expr</span></code>.</p></td>
+<tr class="row-even"><td><p>approx_percentile_cont_with_weight(expr, weight_expr, percentile [, centroids])</p></td>
+<td><p>Calculates an approximation of the specified <code class="docutils literal notranslate"><span class="pre">percentile</span></code> for <code class="docutils literal notranslate"><span class="pre">expr</span></code> and <code class="docutils literal notranslate"><span class="pre">weight_expr</span></code>. Optional <code class="docutils literal notranslate"><span class="pre">centroids</span></code> parameter controls accuracy (default: 100).</p></td>
 </tr>
 <tr class="row-odd"><td><p>bit_and(expr)</p></td>
 <td><p>Computes the bitwise AND of all non-null input values for <code class="docutils literal notranslate"><span class="pre">expr</span></code>.</p></td>

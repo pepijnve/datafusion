@@ -295,11 +295,6 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../user-guide/runtime_configs.html">
-   Runtime Environment Configurations
-  </a>
- </li>
- <li class="toctree-l1">
   <a class="reference internal" href="../user-guide/explain-usage.html">
    Reading Explain Plans
   </a>
@@ -319,6 +314,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="index.html">
    Introduction
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="upgrading.html">
+   Upgrade Guides
   </a>
  </li>
  <li class="toctree-l1">
@@ -357,10 +357,27 @@
    Catalogs, Schemas, and Tables
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="adding-udfs.html">
-   Adding User Defined Functions: Scalar/Window/Aggregate/Table Functions
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="functions/index.html">
+   Functions
   </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="functions/adding-udfs.html">
+     Adding User Defined Functions: Scalar/Window/Aggregate/Table Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="functions/spark.html">
+     Spark Compatible Functions
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="custom-table-providers.html">
@@ -385,11 +402,6 @@
  <li class="toctree-l1">
   <a class="reference internal" href="query-optimizer.html">
    DataFusion Query Optimizer
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="upgrading.html">
-   Upgrade Guides
   </a>
  </li>
 </ul>
@@ -453,8 +465,8 @@
   <a class="reference internal" href="../contributor-guide/specification/index.html">
    Specifications
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
+  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -746,7 +758,7 @@ specific algorithms and detailed optimizations compared to. Given a
 <span class="w">    </span><span class="c1">// TableProvider. For this example, we don&#39;t provide any data</span>
 <span class="w">    </span><span class="c1">// but in production code, this would have `RecordBatch`es with</span>
 <span class="w">    </span><span class="c1">// in memory data</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">table_provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">MemTable</span><span class="p">::</span><span class="n">try_new</span><span class="p">(</span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">schema</span><span class="p">),</span><span class="w"> </span><span class="fm">vec!</span><span class="p">[])</span><span class="o">?</span><span class="p">);</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">table_provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">MemTable</span><span class="p">::</span><span class="n">try_new</span><span class="p">(</span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">schema</span><span class="p">),</span><span class="w"> </span><span class="fm">vec!</span><span class="p">[</span><span class="fm">vec!</span><span class="p">[]])</span><span class="o">?</span><span class="p">);</span>
 <span class="w">    </span><span class="c1">// Use the provider_as_source function to convert the TableProvider to a table source</span>
 <span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">table_source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">provider_as_source</span><span class="p">(</span><span class="n">table_provider</span><span class="p">);</span>
 
@@ -772,8 +784,8 @@ specific algorithms and detailed optimizations compared to. Given a
 <h2>Table Sources<a class="headerlink" href="#table-sources" title="Link to this heading">¶</a></h2>
 <p>The previous examples use a <a class="reference external" href="https://docs.rs/datafusion-expr/latest/datafusion_expr/logical_plan/builder/struct.LogicalTableSource.html">LogicalTableSource</a>, which is used for tests and documentation in DataFusion, and is also
 suitable if you are using DataFusion to build logical plans but do not use DataFusion’s physical planner.</p>
-<p>However, it is more common to use a <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/datasource/provider/trait.TableProvider.html">TableProvider</a>. To get a <a class="reference external" href="https://docs.rs/datafusion-expr/latest/datafusion_expr/trait.TableSource.html">TableSource</a> from a
-<a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/datasource/provider/trait.TableProvider.html">TableProvider</a>, use <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/datasource/default_table_source/fn.provider_as_source.html">provider_as_source</a> or <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/datasource/default_table_source/struct.DefaultTableSource.html">DefaultTableSource</a>.</p>
+<p>However, it is more common to use a <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/datasource/trait.TableProvider.html">TableProvider</a>. To get a <a class="reference external" href="https://docs.rs/datafusion-expr/latest/datafusion_expr/trait.TableSource.html">TableSource</a> from a
+<a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/datasource/trait.TableProvider.html">TableProvider</a>, use <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/datasource/default_table_source/fn.provider_as_source.html">provider_as_source</a> or <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/datasource/default_table_source/struct.DefaultTableSource.html">DefaultTableSource</a>.</p>
 </section>
 </section>
 

@@ -295,11 +295,6 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../user-guide/runtime_configs.html">
-   Runtime Environment Configurations
-  </a>
- </li>
- <li class="toctree-l1">
   <a class="reference internal" href="../user-guide/explain-usage.html">
    Reading Explain Plans
   </a>
@@ -319,6 +314,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../library-user-guide/index.html">
    Introduction
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../library-user-guide/upgrading.html">
+   Upgrade Guides
   </a>
  </li>
  <li class="toctree-l1">
@@ -357,10 +357,27 @@
    Catalogs, Schemas, and Tables
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../library-user-guide/adding-udfs.html">
-   Adding User Defined Functions: Scalar/Window/Aggregate/Table Functions
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../library-user-guide/functions/index.html">
+   Functions
   </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../library-user-guide/functions/adding-udfs.html">
+     Adding User Defined Functions: Scalar/Window/Aggregate/Table Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../library-user-guide/functions/spark.html">
+     Spark Compatible Functions
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../library-user-guide/custom-table-providers.html">
@@ -385,11 +402,6 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../library-user-guide/query-optimizer.html">
    DataFusion Query Optimizer
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../library-user-guide/upgrading.html">
-   Upgrade Guides
   </a>
  </li>
 </ul>
@@ -453,8 +465,8 @@
   <a class="reference internal" href="specification/index.html">
    Specifications
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
+  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -597,23 +609,18 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#step-3-send-notice-to-asf-board">
-     Step 3: Send Notice to ASF Board
+    <a class="reference internal nav-link" href="#step-3-send-invitation-email">
+     Step 3: Send invitation email
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#step-4-send-invitation-email">
-     Step 4: Send invitation email
+    <a class="reference internal nav-link" href="#step-4-chair-promotes-the-committer-to-pmc">
+     Step 4: Chair Promotes the Committer to PMC
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#step-5-chair-promotes-the-committer-to-pmc">
-     Step 5: Chair Promotes the Committer to PMC
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#step-6-announce-and-celebrate-the-new-pmc-member">
-     Step 6: Announce and Celebrate the New PMC Member
+    <a class="reference internal nav-link" href="#step-5-announce-and-celebrate-the-new-pmc-member">
+     Step 5: Announce and Celebrate the New PMC Member
     </a>
    </li>
   </ul>
@@ -904,7 +911,8 @@ If you accept, please let us know by replying to private@datafusion.apache.org.
 </section>
 <section id="new-pmc-members">
 <h2>New PMC Members<a class="headerlink" href="#new-pmc-members" title="Link to this heading">¶</a></h2>
-<p>See also the ASF instructions on <a class="reference external" href="https://www.apache.org/dev/pmc.html#newpmc">how to add a PMC member</a>.</p>
+<p>This is a DataFusion specific cookbook for the Apache Software Foundation
+instructions on <a class="reference external" href="https://www.apache.org/dev/pmc.html#pmcmembers">how to add a PMC member</a>.</p>
 <section id="id1">
 <h3>Step 1: Start a Discussion Thread<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
 <p>As for committers, start a discussion thread on the <code class="docutils literal notranslate"><span class="pre">private&#64;</span></code> mailing list</p>
@@ -951,29 +959,17 @@ Thanks,
 Your Name
 </pre></div>
 </div>
-</section>
-<section id="step-3-send-notice-to-asf-board">
-<h3>Step 3: Send Notice to ASF Board<a class="headerlink" href="#step-3-send-notice-to-asf-board" title="Link to this heading">¶</a></h3>
-<p>The DataFusion PMC Chair then sends a NOTICE to <code class="docutils literal notranslate"><span class="pre">board&#64;apache.org</span></code> (cc’ing
-<code class="docutils literal notranslate"><span class="pre">private&#64;</span></code>) like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>To: board@apache.org
-Cc: private@datafusion.apache.org
-Subject: [NOTICE] $NEW_PMC_MEMBER to join DataFusion PMC
+<p>If this vote succeeds, send a “RESULT” email to <code class="docutils literal notranslate"><span class="pre">private&#64;</span></code> like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>To: private@datafusion.apache.org
+Subject: [RESULT][VOTE] $NEW_PMC_MEMBER for PMC
 
-DataFusion proposes to invite $NEW_PMC_MEMBER ($NEW_PMC_MEMBER_APACHE_ID) to join the PMC.
-
-The vote result is available here:
-$VOTE_RESULT_URL
-
-FYI: Full vote details:
-$VOTE_URL
+The vote carries with N +1 votes and no -1 votes. I will send an invitation
 </pre></div>
 </div>
 </section>
-<section id="step-4-send-invitation-email">
-<h3>Step 4: Send invitation email<a class="headerlink" href="#step-4-send-invitation-email" title="Link to this heading">¶</a></h3>
-<p>Once, the PMC chair has confirmed that the email sent to <code class="docutils literal notranslate"><span class="pre">board&#64;apache.org</span></code> has
-made it to the archives, the Chair sends an invitation e-mail to the new PMC
+<section id="step-3-send-invitation-email">
+<h3>Step 3: Send invitation email<a class="headerlink" href="#step-3-send-invitation-email" title="Link to this heading">¶</a></h3>
+<p>Assuming the vote passes, the Chair sends an invitation e-mail to the new PMC
 member (cc’ing <code class="docutils literal notranslate"><span class="pre">private&#64;</span></code>) like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>To: $EMAIL
 Cc: private@datafusion.apache.org
@@ -1022,12 +1018,12 @@ The Apache DataFusion PMC
 </pre></div>
 </div>
 </section>
-<section id="step-5-chair-promotes-the-committer-to-pmc">
-<h3>Step 5: Chair Promotes the Committer to PMC<a class="headerlink" href="#step-5-chair-promotes-the-committer-to-pmc" title="Link to this heading">¶</a></h3>
+<section id="step-4-chair-promotes-the-committer-to-pmc">
+<h3>Step 4: Chair Promotes the Committer to PMC<a class="headerlink" href="#step-4-chair-promotes-the-committer-to-pmc" title="Link to this heading">¶</a></h3>
 <p>The PMC chair adds the user to the PMC using the <a class="reference external" href="https://whimsy.apache.org/roster/committee/datafusion">Whimsy Roster Tool</a>.</p>
 </section>
-<section id="step-6-announce-and-celebrate-the-new-pmc-member">
-<h3>Step 6: Announce and Celebrate the New PMC Member<a class="headerlink" href="#step-6-announce-and-celebrate-the-new-pmc-member" title="Link to this heading">¶</a></h3>
+<section id="step-5-announce-and-celebrate-the-new-pmc-member">
+<h3>Step 5: Announce and Celebrate the New PMC Member<a class="headerlink" href="#step-5-announce-and-celebrate-the-new-pmc-member" title="Link to this heading">¶</a></h3>
 <p>Send an email such as the following to <code class="docutils literal notranslate"><span class="pre">dev&#64;datafusion.apache.org</span></code> to celebrate:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>To: dev@datafusion.apache.org
 Subject: [ANNOUNCE] New DataFusion PMC member: $NEW_PMC_MEMBER

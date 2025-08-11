@@ -295,11 +295,6 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../runtime_configs.html">
-   Runtime Environment Configurations
-  </a>
- </li>
- <li class="toctree-l1">
   <a class="reference internal" href="../explain-usage.html">
    Reading Explain Plans
   </a>
@@ -319,6 +314,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../../library-user-guide/index.html">
    Introduction
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../library-user-guide/upgrading.html">
+   Upgrade Guides
   </a>
  </li>
  <li class="toctree-l1">
@@ -357,10 +357,27 @@
    Catalogs, Schemas, and Tables
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../library-user-guide/adding-udfs.html">
-   Adding User Defined Functions: Scalar/Window/Aggregate/Table Functions
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../library-user-guide/functions/index.html">
+   Functions
   </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../library-user-guide/functions/adding-udfs.html">
+     Adding User Defined Functions: Scalar/Window/Aggregate/Table Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../library-user-guide/functions/spark.html">
+     Spark Compatible Functions
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../../library-user-guide/custom-table-providers.html">
@@ -385,11 +402,6 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../../library-user-guide/query-optimizer.html">
    DataFusion Query Optimizer
-  </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../library-user-guide/upgrading.html">
-   Upgrade Guides
   </a>
  </li>
 </ul>
@@ -453,8 +465,8 @@
   <a class="reference internal" href="../../contributor-guide/specification/index.html">
    Specifications
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
+  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -646,6 +658,24 @@
        Example
       </a>
      </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#analytical-functions">
+   Analytical Functions
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#first-value">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       first_value
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#id6">
        Arguments
@@ -922,13 +952,12 @@ Instead, the rows retain their separate identities. Behind the scenes, the windo
 </div>
 <section id="example">
 <h4>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h4>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">--Example usage of the cume_dist window function:</span>
-<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">salary</span><span class="p">,</span>
-<span class="w">       </span><span class="n">cume_dist</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">cume_dist</span>
-<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
-</pre></div>
-</div>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">--------+-----------+</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- Example usage of the cume_dist window function:</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">    </span><span class="n">cume_dist</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">cume_dist</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+
+<span class="o">+</span><span class="c1">--------+-----------+</span>
 <span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">cume_dist</span><span class="w"> </span><span class="o">|</span>
 <span class="o">+</span><span class="c1">--------+-----------+</span>
 <span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">33</span><span class="w">      </span><span class="o">|</span>
@@ -947,14 +976,13 @@ Instead, the rows retain their separate identities. Behind the scenes, the windo
 </div>
 <section id="id1">
 <h4>Example<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h4>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">--Example usage of the dense_rank window function:</span>
-<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">department</span><span class="p">,</span>
-<span class="w">           </span><span class="n">salary</span><span class="p">,</span>
-<span class="w">           </span><span class="n">dense_rank</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">department</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">dense_rank</span>
-<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
-</pre></div>
-</div>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+--------+------------+</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- Example usage of the dense_rank window function:</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">department</span><span class="p">,</span>
+<span class="w">    </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">    </span><span class="n">dense_rank</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">department</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">dense_rank</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+
+<span class="o">+</span><span class="c1">-------------+--------+------------+</span>
 <span class="o">|</span><span class="w"> </span><span class="n">department</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">dense_rank</span><span class="w"> </span><span class="o">|</span>
 <span class="o">+</span><span class="c1">-------------+--------+------------+</span>
 <span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">          </span><span class="o">|</span>
@@ -982,14 +1010,13 @@ Instead, the rows retain their separate identities. Behind the scenes, the windo
 </section>
 <section id="id2">
 <h4>Example<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h4>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">--Example usage of the ntile window function:</span>
-<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">employee_id</span><span class="p">,</span>
-<span class="w">           </span><span class="n">salary</span><span class="p">,</span>
-<span class="w">           </span><span class="n">ntile</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">quartile</span>
-<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
-</pre></div>
-</div>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+--------+----------+</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- Example usage of the ntile window function:</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">employee_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ntile</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">quartile</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+
+<span class="o">+</span><span class="c1">-------------+--------+----------+</span>
 <span class="o">|</span><span class="w"> </span><span class="n">employee_id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">quartile</span><span class="w"> </span><span class="o">|</span>
 <span class="o">+</span><span class="c1">-------------+--------+----------+</span>
 <span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">90000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">        </span><span class="o">|</span>
@@ -1013,14 +1040,13 @@ Instead, the rows retain their separate identities. Behind the scenes, the windo
 </div>
 <section id="id3">
 <h4>Example<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h4>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">--Example usage of the percent_rank window function:</span>
-<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">employee_id</span><span class="p">,</span>
-<span class="w">           </span><span class="n">salary</span><span class="p">,</span>
-<span class="w">           </span><span class="n">percent_rank</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">percent_rank</span>
-<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
-</pre></div>
-</div>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+--------+---------------+</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">-- Example usage of the percent_rank window function:</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">employee_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">    </span><span class="n">percent_rank</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">percent_rank</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+
+<span class="o">+</span><span class="c1">-------------+--------+---------------+</span>
 <span class="o">|</span><span class="w"> </span><span class="n">employee_id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">percent_rank</span><span class="w">  </span><span class="o">|</span>
 <span class="o">+</span><span class="c1">-------------+--------+---------------+</span>
 <span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span><span class="w">          </span><span class="o">|</span>
@@ -1039,14 +1065,13 @@ Instead, the rows retain their separate identities. Behind the scenes, the windo
 </div>
 <section id="id4">
 <h4>Example<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">--Example usage of the rank window function:</span>
-<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">department</span><span class="p">,</span>
-<span class="w">           </span><span class="n">salary</span><span class="p">,</span>
-<span class="w">           </span><span class="n">rank</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">department</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">rank</span>
-<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
-</pre></div>
-</div>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+--------+------+</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- Example usage of the rank window function:</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">department</span><span class="p">,</span>
+<span class="w">    </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">    </span><span class="n">rank</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">department</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">rank</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+
+<span class="o">+</span><span class="c1">-------------+--------+------+</span>
 <span class="o">|</span><span class="w"> </span><span class="n">department</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">rank</span><span class="w"> </span><span class="o">|</span>
 <span class="o">+</span><span class="c1">-------------+--------+------+</span>
 <span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">    </span><span class="o">|</span>
@@ -1068,14 +1093,13 @@ Instead, the rows retain their separate identities. Behind the scenes, the windo
 </div>
 <section id="id5">
 <h4>Example<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h4>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">--Example usage of the row_number window function:</span>
-<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">department</span><span class="p">,</span>
-<span class="w">           </span><span class="n">salary</span><span class="p">,</span>
-<span class="w">           </span><span class="n">row_number</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">department</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">row_num</span>
-<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
-</pre></div>
-</div>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+--------+---------+</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- Example usage of the row_number window function:</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">department</span><span class="p">,</span>
+<span class="w">  </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">  </span><span class="n">row_number</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">department</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">row_num</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+
+<span class="o">+</span><span class="c1">-------------+--------+---------+</span>
 <span class="o">|</span><span class="w"> </span><span class="n">department</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">row_num</span><span class="w"> </span><span class="o">|</span>
 <span class="o">+</span><span class="c1">-------------+--------+---------+</span>
 <span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">       </span><span class="o">|</span>
@@ -1085,26 +1109,26 @@ Instead, the rows retain their separate identities. Behind the scenes, the windo
 <span class="o">|</span><span class="w"> </span><span class="n">Engineering</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">90000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">       </span><span class="o">|</span>
 <span class="o">|</span><span class="w"> </span><span class="n">Engineering</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">80000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">2</span><span class="w">       </span><span class="o">|</span>
 <span class="o">+</span><span class="c1">-------------+--------+---------+</span>
-<span class="o">```#</span>
-
-
-<span class="o">##</span><span class="w"> </span><span class="n">Analytical</span><span class="w"> </span><span class="n">Functions</span>
-
-<span class="o">-</span><span class="w"> </span><span class="p">[</span><span class="n">first_value</span><span class="p">](</span><span class="o">#</span><span class="n">first_value</span><span class="p">)</span>
-<span class="o">-</span><span class="w"> </span><span class="p">[</span><span class="n">lag</span><span class="p">](</span><span class="o">#</span><span class="n">lag</span><span class="p">)</span>
-<span class="o">-</span><span class="w"> </span><span class="p">[</span><span class="n">last_value</span><span class="p">](</span><span class="o">#</span><span class="n">last_value</span><span class="p">)</span>
-<span class="o">-</span><span class="w"> </span><span class="p">[</span><span class="n">lead</span><span class="p">](</span><span class="o">#</span><span class="n">lead</span><span class="p">)</span>
-<span class="o">-</span><span class="w"> </span><span class="p">[</span><span class="n">nth_value</span><span class="p">](</span><span class="o">#</span><span class="n">nth_value</span><span class="p">)</span>
-
-<span class="o">###</span><span class="w"> </span><span class="o">`</span><span class="n">first_value</span><span class="o">`</span>
-
-<span class="k">Returns</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="n">evaluated</span><span class="w"> </span><span class="k">at</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="n">that</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="k">first</span><span class="w"> </span><span class="k">row</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">window</span><span class="w"> </span><span class="n">frame</span><span class="p">.</span>
-
-<span class="o">```</span><span class="k">sql</span>
-<span class="n">first_value</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
+</section>
+</section>
+<section id="analytical-functions">
+<h2>Analytical Functions<a class="headerlink" href="#analytical-functions" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="#first-value">first_value</a></p></li>
+<li><p><a class="reference internal" href="#lag">lag</a></p></li>
+<li><p><a class="reference internal" href="#last-value">last_value</a></p></li>
+<li><p><a class="reference internal" href="#lead">lead</a></p></li>
+<li><p><a class="reference internal" href="#nth-value">nth_value</a></p></li>
+</ul>
+<section id="first-value">
+<h3><code class="docutils literal notranslate"><span class="pre">first_value</span></code><a class="headerlink" href="#first-value" title="Link to this heading">¶</a></h3>
+<p>Returns value evaluated at the row that is the first row of the window frame.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="n">first_value</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span>
+</pre></div>
+</div>
 <section id="id6">
 <h4>Arguments<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h4>
 <ul class="simple">
@@ -1113,15 +1137,14 @@ Instead, the rows retain their separate identities. Behind the scenes, the windo
 </section>
 <section id="id7">
 <h4>Example<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h4>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">--Example usage of the first_value window function:</span>
-<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">department</span><span class="p">,</span>
-<span class="w">           </span><span class="n">employee_id</span><span class="p">,</span>
-<span class="w">           </span><span class="n">salary</span><span class="p">,</span>
-<span class="w">           </span><span class="n">first_value</span><span class="p">(</span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">department</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">top_salary</span>
-<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
-</pre></div>
-</div>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+-------------+--------+------------+</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- Example usage of the first_value window function:</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">department</span><span class="p">,</span>
+<span class="w">  </span><span class="n">employee_id</span><span class="p">,</span>
+<span class="w">  </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">  </span><span class="n">first_value</span><span class="p">(</span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">department</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">top_salary</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+
+<span class="o">+</span><span class="c1">-------------+-------------+--------+------------+</span>
 <span class="o">|</span><span class="w"> </span><span class="n">department</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">employee_id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">top_salary</span><span class="w"> </span><span class="o">|</span>
 <span class="o">+</span><span class="c1">-------------+-------------+--------+------------+</span>
 <span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">70000</span><span class="w">      </span><span class="o">|</span>
@@ -1150,14 +1173,13 @@ Instead, the rows retain their separate identities. Behind the scenes, the windo
 </section>
 <section id="id9">
 <h4>Example<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h4>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">--Example usage of the lag window function:</span>
-<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">employee_id</span><span class="p">,</span>
-<span class="w">           </span><span class="n">salary</span><span class="p">,</span>
-<span class="w">           </span><span class="n">lag</span><span class="p">(</span><span class="n">salary</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">employee_id</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">prev_salary</span>
-<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
-</pre></div>
-</div>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+--------+-------------+</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- Example usage of the lag window function:</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">employee_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">salary</span><span class="p">,</span>
+<span class="w">    </span><span class="n">lag</span><span class="p">(</span><span class="n">salary</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">employee_id</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">prev_salary</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+
+<span class="o">+</span><span class="c1">-------------+--------+-------------+</span>
 <span class="o">|</span><span class="w"> </span><span class="n">employee_id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">prev_salary</span><span class="w"> </span><span class="o">|</span>
 <span class="o">+</span><span class="c1">-------------+--------+-------------+</span>
 <span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">0</span><span class="w">           </span><span class="o">|</span>
@@ -1189,9 +1211,8 @@ Instead, the rows retain their separate identities. Behind the scenes, the windo
 <span class="w">       </span><span class="n">salary</span><span class="p">,</span>
 <span class="w">       </span><span class="n">last_value</span><span class="p">(</span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">department</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">running_last_salary</span>
 <span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
-</pre></div>
-</div>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+-------------+--------+---------------------+</span>
+
+<span class="o">+</span><span class="c1">-------------+-------------+--------+---------------------+</span>
 <span class="o">|</span><span class="w"> </span><span class="n">department</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">employee_id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">running_last_salary</span><span class="w"> </span><span class="o">|</span>
 <span class="o">+</span><span class="c1">-------------+-------------+--------+---------------------+</span>
 <span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">               </span><span class="o">|</span>
@@ -1220,16 +1241,15 @@ Instead, the rows retain their separate identities. Behind the scenes, the windo
 </section>
 <section id="id13">
 <h4>Example<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h4>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- Example usage of lead() :</span>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- Example usage of lead window function:</span>
 <span class="k">SELECT</span>
 <span class="w">    </span><span class="n">employee_id</span><span class="p">,</span>
 <span class="w">    </span><span class="n">department</span><span class="p">,</span>
 <span class="w">    </span><span class="n">salary</span><span class="p">,</span>
 <span class="w">    </span><span class="n">lead</span><span class="p">(</span><span class="n">salary</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">department</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">next_salary</span>
 <span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
-</pre></div>
-</div>
-<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">+</span><span class="c1">-------------+-------------+--------+--------------+</span>
+
+<span class="o">+</span><span class="c1">-------------+-------------+--------+--------------+</span>
 <span class="o">|</span><span class="w"> </span><span class="n">employee_id</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">department</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">next_salary</span><span class="w">  </span><span class="o">|</span>
 <span class="o">+</span><span class="c1">-------------+-------------+--------+--------------+</span>
 <span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">           </span><span class="o">|</span><span class="w"> </span><span class="n">Sales</span><span class="w">       </span><span class="o">|</span><span class="w"> </span><span class="mi">30000</span><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="mi">50000</span><span class="w">        </span><span class="o">|</span>
@@ -1272,17 +1292,16 @@ Instead, the rows retain their separate identities. Behind the scenes, the windo
 <span class="w">  </span><span class="k">ROWS</span><span class="w"> </span><span class="k">BETWEEN</span><span class="w"> </span><span class="n">UNBOUNDED</span><span class="w"> </span><span class="n">PRECEDING</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="k">CURRENT</span><span class="w"> </span><span class="k">ROW</span>
 <span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">nth_value</span>
 <span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
-</pre></div>
-</div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>+-----------+
-| nth_value |
-+-----------+
-| 40000     |
-| 40000     |
-| 40000     |
-| 40000     |
-| 40000     |
-+-----------+
+
+<span class="o">+</span><span class="c1">-----------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">nth_value</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-----------+</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">40000</span><span class="w">     </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">40000</span><span class="w">     </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">40000</span><span class="w">     </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">40000</span><span class="w">     </span><span class="o">|</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">40000</span><span class="w">     </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-----------+</span>
 </pre></div>
 </div>
 </section>
