@@ -195,6 +195,11 @@
      Local Files / Directories
     </a>
    </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../cli/functions.html">
+     CLI Specific Functions
+    </a>
+   </li>
   </ul>
  </li>
  <li class="toctree-l1">
@@ -448,7 +453,7 @@
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../../contributor-guide/roadmap.html">
-   Roadmap
+   Roadmap and Improvement Proposals
   </a>
  </li>
  <li class="toctree-l1">
@@ -544,6 +549,11 @@
 
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#filter-clause">
+   Filter clause
+  </a>
+ </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#general-functions">
    General Functions
@@ -1452,6 +1462,21 @@ dev/update_function_docs.sh file for updating surrounding text.
 <section id="aggregate-functions">
 <h1>Aggregate Functions<a class="headerlink" href="#aggregate-functions" title="Link to this heading">¶</a></h1>
 <p>Aggregate functions operate on a set of values to compute a single result.</p>
+<section id="filter-clause">
+<h2>Filter clause<a class="headerlink" href="#filter-clause" title="Link to this heading">¶</a></h2>
+<p>Aggregate functions support the SQL <code class="docutils literal notranslate"><span class="pre">FILTER</span> <span class="pre">(WHERE</span> <span class="pre">...)</span></code> clause to restrict which input rows contribute to the aggregate result.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">function</span><span class="p">([</span><span class="n">exprs</span><span class="p">])</span><span class="w"> </span><span class="n">FILTER</span><span class="w"> </span><span class="p">(</span><span class="k">WHERE</span><span class="w"> </span><span class="n">condition</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Example:</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">SELECT</span>
+<span class="w">  </span><span class="k">sum</span><span class="p">(</span><span class="n">salary</span><span class="p">)</span><span class="w"> </span><span class="n">FILTER</span><span class="w"> </span><span class="p">(</span><span class="k">WHERE</span><span class="w"> </span><span class="n">salary</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">sum_positive_salaries</span><span class="p">,</span>
+<span class="w">  </span><span class="k">count</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w">    </span><span class="n">FILTER</span><span class="w"> </span><span class="p">(</span><span class="k">WHERE</span><span class="w"> </span><span class="n">active</span><span class="p">)</span><span class="w">     </span><span class="k">AS</span><span class="w"> </span><span class="n">active_count</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">employees</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Note: When no rows pass the filter, <code class="docutils literal notranslate"><span class="pre">COUNT</span></code> returns <code class="docutils literal notranslate"><span class="pre">0</span></code> while <code class="docutils literal notranslate"><span class="pre">SUM</span></code>/<code class="docutils literal notranslate"><span class="pre">AVG</span></code>/<code class="docutils literal notranslate"><span class="pre">MIN</span></code>/<code class="docutils literal notranslate"><span class="pre">MAX</span></code> return <code class="docutils literal notranslate"><span class="pre">NULL</span></code>.</p>
+</section>
 <section id="general-functions">
 <h2>General Functions<a class="headerlink" href="#general-functions" title="Link to this heading">¶</a></h2>
 <ul class="simple">
@@ -2537,6 +2562,22 @@ This aggregation function can only mix DISTINCT and ORDER BY if the ordering exp
 <span class="o">+</span><span class="c1">-----------------------------------------------------------------------+</span>
 </pre></div>
 </div>
+<p>An alternate syntax is also supported:</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="n">approx_percentile_cont</span><span class="p">(</span><span class="k">column_name</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">75</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">table_name</span><span class="p">;</span>
+<span class="o">+</span><span class="c1">-----------------------------------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">approx_percentile_cont</span><span class="p">(</span><span class="k">column_name</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">75</span><span class="p">)</span><span class="w">     </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-----------------------------------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">65</span><span class="p">.</span><span class="mi">0</span><span class="w">                                          </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">-----------------------------------------------+</span>
+
+<span class="o">&gt;</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="n">approx_percentile_cont</span><span class="p">(</span><span class="k">column_name</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">75</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">table_name</span><span class="p">;</span>
+<span class="o">+</span><span class="c1">----------------------------------------------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">approx_percentile_cont</span><span class="p">(</span><span class="k">column_name</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">75</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="w">           </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">----------------------------------------------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">65</span><span class="p">.</span><span class="mi">0</span><span class="w">                                                     </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">----------------------------------------------------------+</span>
+</pre></div>
+</div>
 </section>
 </section>
 <section id="approx-percentile-cont-with-weight">
@@ -2568,6 +2609,15 @@ This aggregation function can only mix DISTINCT and ORDER BY if the ordering exp
 <span class="o">+</span><span class="c1">--------------------------------------------------------------------------------------------------+</span>
 <span class="o">|</span><span class="w"> </span><span class="mi">78</span><span class="p">.</span><span class="mi">5</span><span class="w">                                                                                             </span><span class="o">|</span>
 <span class="o">+</span><span class="c1">--------------------------------------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+<p>An alternative syntax is also supported:</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="n">approx_percentile_cont_with_weight</span><span class="p">(</span><span class="k">column_name</span><span class="p">,</span><span class="w"> </span><span class="n">weight_column</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">90</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">table_name</span><span class="p">;</span>
+<span class="o">+</span><span class="c1">--------------------------------------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="n">approx_percentile_cont_with_weight</span><span class="p">(</span><span class="k">column_name</span><span class="p">,</span><span class="w"> </span><span class="n">weight_column</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">90</span><span class="p">)</span><span class="w"> </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">--------------------------------------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">78</span><span class="p">.</span><span class="mi">5</span><span class="w">                                             </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">--------------------------------------------------+</span>
 </pre></div>
 </div>
 </section>

@@ -195,6 +195,11 @@
      Local Files / Directories
     </a>
    </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../cli/functions.html">
+     CLI Specific Functions
+    </a>
+   </li>
   </ul>
  </li>
  <li class="toctree-l1">
@@ -448,7 +453,7 @@
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../../contributor-guide/roadmap.html">
-   Roadmap
+   Roadmap and Improvement Proposals
   </a>
  </li>
  <li class="toctree-l1">
@@ -632,6 +637,11 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#qualify-clause">
+   QUALIFY clause
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#union-clause">
    UNION clause
   </a>
@@ -713,6 +723,7 @@ In this documentation we describe the SQL syntax in DataFusion.</p>
 [ <a class="reference internal" href="#where-clause">WHERE</a> condition ] <br/>
 [ <a class="reference internal" href="#group-by-clause">GROUP BY</a> grouping_element [, …] ] <br/>
 [ <a class="reference internal" href="#having-clause">HAVING</a> condition] <br/>
+[ <a class="reference internal" href="#qualify-clause">QUALIFY</a> condition] <br/>
 [ <a class="reference internal" href="#union-clause">UNION</a> [ ALL | select ] <br/>
 [ <a class="reference internal" href="#order-by-clause">ORDER BY</a> expression [ ASC | DESC ][, …] ] <br/>
 [ <a class="reference internal" href="#limit-clause">LIMIT</a> count ] <br/>
@@ -742,6 +753,16 @@ By default <code class="docutils literal notranslate"><span class="pre">ALL</spa
 <h2>FROM clause<a class="headerlink" href="#from-clause" title="Link to this heading">¶</a></h2>
 <p>Example:</p>
 <div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">SELECT</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">a</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">t</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">FROM</span></code> clause can also come before the <code class="docutils literal notranslate"><span class="pre">SELECT</span></code> clause.
+Example:</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">FROM</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">t</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">a</span>
+</pre></div>
+</div>
+<p>If the <code class="docutils literal notranslate"><span class="pre">SELECT</span></code> clause is omitted, the <code class="docutils literal notranslate"><span class="pre">FROM</span></code> clause will return all columns from the table.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">FROM</span><span class="w"> </span><span class="k">table</span>
 </pre></div>
 </div>
 </section>
@@ -911,6 +932,13 @@ aggregation is calculated in the order of the requirement.</p>
 <h2>HAVING clause<a class="headerlink" href="#having-clause" title="Link to this heading">¶</a></h2>
 <p>Example:</p>
 <div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">SELECT</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="k">MAX</span><span class="p">(</span><span class="k">c</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="k">HAVING</span><span class="w"> </span><span class="k">MAX</span><span class="p">(</span><span class="k">c</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">10</span>
+</pre></div>
+</div>
+</section>
+<section id="qualify-clause">
+<h2>QUALIFY clause<a class="headerlink" href="#qualify-clause" title="Link to this heading">¶</a></h2>
+<p>Example:</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">SELECT</span><span class="w"> </span><span class="n">ROW_NUMBER</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">region</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">rk</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">table</span><span class="w"> </span><span class="n">QUALIFY</span><span class="w"> </span><span class="n">rk</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
 </pre></div>
 </div>
 </section>
