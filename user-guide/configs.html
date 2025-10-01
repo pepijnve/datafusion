@@ -24,7 +24,7 @@
     
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
-    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=c6d785ac" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=955f83bf" />
     
     <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
   
@@ -488,15 +488,27 @@
    </li>
   </ul>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../contributor-guide/gsoc_application_guidelines.html">
-   GSoC Application Guidelines
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../contributor-guide/gsoc/index.html">
+   Google Summer of Code (GSOC)
   </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../contributor-guide/gsoc_project_ideas.html">
-   GSoC Project Ideas
-  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+  <label for="toctree-checkbox-5">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../contributor-guide/gsoc/gsoc_application_guidelines_2025.html">
+     GSoC Application Guidelines (2025)
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../contributor-guide/gsoc/gsoc_project_ideas_2025.html">
+     GSoC Project Ideas (2025)
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
@@ -782,125 +794,133 @@ example, to configure <code class="docutils literal notranslate"><span class="pr
 <td><p>true</p></td>
 <td><p>(reading) Use any available bloom filters when reading parquet files</p></td>
 </tr>
-<tr class="row-odd"><td><p>datafusion.execution.parquet.data_pagesize_limit</p></td>
+<tr class="row-odd"><td><p>datafusion.execution.parquet.max_predicate_cache_size</p></td>
+<td><p>NULL</p></td>
+<td><p>(reading) The maximum predicate cache size, in bytes. When <code class="docutils literal notranslate"><span class="pre">pushdown_filters</span></code> is enabled, sets the maximum memory used to cache the results of predicate evaluation between filter evaluation and output generation. Decreasing this value will reduce memory usage, but may increase IO and CPU usage. None means use the default parquet reader setting. 0 means no caching.</p></td>
+</tr>
+<tr class="row-even"><td><p>datafusion.execution.parquet.data_pagesize_limit</p></td>
 <td><p>1048576</p></td>
 <td><p>(writing) Sets best effort maximum size of data page in bytes</p></td>
 </tr>
-<tr class="row-even"><td><p>datafusion.execution.parquet.write_batch_size</p></td>
+<tr class="row-odd"><td><p>datafusion.execution.parquet.write_batch_size</p></td>
 <td><p>1024</p></td>
 <td><p>(writing) Sets write_batch_size in bytes</p></td>
 </tr>
-<tr class="row-odd"><td><p>datafusion.execution.parquet.writer_version</p></td>
+<tr class="row-even"><td><p>datafusion.execution.parquet.writer_version</p></td>
 <td><p>1.0</p></td>
 <td><p>(writing) Sets parquet writer version valid values are “1.0” and “2.0”</p></td>
 </tr>
-<tr class="row-even"><td><p>datafusion.execution.parquet.skip_arrow_metadata</p></td>
+<tr class="row-odd"><td><p>datafusion.execution.parquet.skip_arrow_metadata</p></td>
 <td><p>false</p></td>
 <td><p>(writing) Skip encoding the embedded arrow metadata in the KV_meta This is analogous to the <code class="docutils literal notranslate"><span class="pre">ArrowWriterOptions::with_skip_arrow_metadata</span></code>. Refer to <a class="reference external" href="https://docs.rs/parquet/53.3.0/parquet/arrow/arrow_writer/struct.ArrowWriterOptions.html#method.with_skip_arrow_metadata">https://docs.rs/parquet/53.3.0/parquet/arrow/arrow_writer/struct.ArrowWriterOptions.html#method.with_skip_arrow_metadata</a></p></td>
 </tr>
-<tr class="row-odd"><td><p>datafusion.execution.parquet.compression</p></td>
+<tr class="row-even"><td><p>datafusion.execution.parquet.compression</p></td>
 <td><p>zstd(3)</p></td>
 <td><p>(writing) Sets default parquet compression codec. Valid values are: uncompressed, snappy, gzip(level), lzo, brotli(level), lz4, zstd(level), and lz4_raw. These values are not case sensitive. If NULL, uses default parquet writer setting Note that this default setting is not the same as the default parquet writer setting.</p></td>
 </tr>
-<tr class="row-even"><td><p>datafusion.execution.parquet.dictionary_enabled</p></td>
+<tr class="row-odd"><td><p>datafusion.execution.parquet.dictionary_enabled</p></td>
 <td><p>true</p></td>
 <td><p>(writing) Sets if dictionary encoding is enabled. If NULL, uses default parquet writer setting</p></td>
 </tr>
-<tr class="row-odd"><td><p>datafusion.execution.parquet.dictionary_page_size_limit</p></td>
+<tr class="row-even"><td><p>datafusion.execution.parquet.dictionary_page_size_limit</p></td>
 <td><p>1048576</p></td>
 <td><p>(writing) Sets best effort maximum dictionary page size, in bytes</p></td>
 </tr>
-<tr class="row-even"><td><p>datafusion.execution.parquet.statistics_enabled</p></td>
+<tr class="row-odd"><td><p>datafusion.execution.parquet.statistics_enabled</p></td>
 <td><p>page</p></td>
 <td><p>(writing) Sets if statistics are enabled for any column Valid values are: “none”, “chunk”, and “page” These values are not case sensitive. If NULL, uses default parquet writer setting</p></td>
 </tr>
-<tr class="row-odd"><td><p>datafusion.execution.parquet.max_row_group_size</p></td>
+<tr class="row-even"><td><p>datafusion.execution.parquet.max_row_group_size</p></td>
 <td><p>1048576</p></td>
 <td><p>(writing) Target maximum number of rows in each row group (defaults to 1M rows). Writing larger row groups requires more memory to write, but can get better compression and be faster to read.</p></td>
 </tr>
-<tr class="row-even"><td><p>datafusion.execution.parquet.created_by</p></td>
+<tr class="row-odd"><td><p>datafusion.execution.parquet.created_by</p></td>
 <td><p>datafusion version 50.0.0</p></td>
 <td><p>(writing) Sets “created by” property</p></td>
 </tr>
-<tr class="row-odd"><td><p>datafusion.execution.parquet.column_index_truncate_length</p></td>
+<tr class="row-even"><td><p>datafusion.execution.parquet.column_index_truncate_length</p></td>
 <td><p>64</p></td>
 <td><p>(writing) Sets column index truncate length</p></td>
 </tr>
-<tr class="row-even"><td><p>datafusion.execution.parquet.statistics_truncate_length</p></td>
+<tr class="row-odd"><td><p>datafusion.execution.parquet.statistics_truncate_length</p></td>
 <td><p>64</p></td>
 <td><p>(writing) Sets statistics truncate length. If NULL, uses default parquet writer setting</p></td>
 </tr>
-<tr class="row-odd"><td><p>datafusion.execution.parquet.data_page_row_count_limit</p></td>
+<tr class="row-even"><td><p>datafusion.execution.parquet.data_page_row_count_limit</p></td>
 <td><p>20000</p></td>
 <td><p>(writing) Sets best effort maximum number of rows in data page</p></td>
 </tr>
-<tr class="row-even"><td><p>datafusion.execution.parquet.encoding</p></td>
+<tr class="row-odd"><td><p>datafusion.execution.parquet.encoding</p></td>
 <td><p>NULL</p></td>
 <td><p>(writing) Sets default encoding for any column. Valid values are: plain, plain_dictionary, rle, bit_packed, delta_binary_packed, delta_length_byte_array, delta_byte_array, rle_dictionary, and byte_stream_split. These values are not case sensitive. If NULL, uses default parquet writer setting</p></td>
 </tr>
-<tr class="row-odd"><td><p>datafusion.execution.parquet.bloom_filter_on_write</p></td>
+<tr class="row-even"><td><p>datafusion.execution.parquet.bloom_filter_on_write</p></td>
 <td><p>false</p></td>
 <td><p>(writing) Write bloom filters for all columns when creating parquet files</p></td>
 </tr>
-<tr class="row-even"><td><p>datafusion.execution.parquet.bloom_filter_fpp</p></td>
+<tr class="row-odd"><td><p>datafusion.execution.parquet.bloom_filter_fpp</p></td>
 <td><p>NULL</p></td>
 <td><p>(writing) Sets bloom filter false positive probability. If NULL, uses default parquet writer setting</p></td>
 </tr>
-<tr class="row-odd"><td><p>datafusion.execution.parquet.bloom_filter_ndv</p></td>
+<tr class="row-even"><td><p>datafusion.execution.parquet.bloom_filter_ndv</p></td>
 <td><p>NULL</p></td>
 <td><p>(writing) Sets bloom filter number of distinct values. If NULL, uses default parquet writer setting</p></td>
 </tr>
-<tr class="row-even"><td><p>datafusion.execution.parquet.allow_single_file_parallelism</p></td>
+<tr class="row-odd"><td><p>datafusion.execution.parquet.allow_single_file_parallelism</p></td>
 <td><p>true</p></td>
 <td><p>(writing) Controls whether DataFusion will attempt to speed up writing parquet files by serializing them in parallel. Each column in each row group in each output file are serialized in parallel leveraging a maximum possible core count of n_files<em>n_row_groups</em>n_columns.</p></td>
 </tr>
-<tr class="row-odd"><td><p>datafusion.execution.parquet.maximum_parallel_row_group_writers</p></td>
+<tr class="row-even"><td><p>datafusion.execution.parquet.maximum_parallel_row_group_writers</p></td>
 <td><p>1</p></td>
 <td><p>(writing) By default parallel parquet writer is tuned for minimum memory usage in a streaming execution plan. You may see a performance benefit when writing large parquet files by increasing maximum_parallel_row_group_writers and maximum_buffered_record_batches_per_stream if your system has idle cores and can tolerate additional memory usage. Boosting these values is likely worthwhile when writing out already in-memory data, such as from a cached data frame.</p></td>
 </tr>
-<tr class="row-even"><td><p>datafusion.execution.parquet.maximum_buffered_record_batches_per_stream</p></td>
+<tr class="row-odd"><td><p>datafusion.execution.parquet.maximum_buffered_record_batches_per_stream</p></td>
 <td><p>2</p></td>
 <td><p>(writing) By default parallel parquet writer is tuned for minimum memory usage in a streaming execution plan. You may see a performance benefit when writing large parquet files by increasing maximum_parallel_row_group_writers and maximum_buffered_record_batches_per_stream if your system has idle cores and can tolerate additional memory usage. Boosting these values is likely worthwhile when writing out already in-memory data, such as from a cached data frame.</p></td>
 </tr>
-<tr class="row-odd"><td><p>datafusion.execution.planning_concurrency</p></td>
+<tr class="row-even"><td><p>datafusion.execution.planning_concurrency</p></td>
 <td><p>0</p></td>
 <td><p>Fan-out during initial physical planning. This is mostly use to plan <code class="docutils literal notranslate"><span class="pre">UNION</span></code> children in parallel. Defaults to the number of CPU cores on the system</p></td>
 </tr>
-<tr class="row-even"><td><p>datafusion.execution.skip_physical_aggregate_schema_check</p></td>
+<tr class="row-odd"><td><p>datafusion.execution.skip_physical_aggregate_schema_check</p></td>
 <td><p>false</p></td>
 <td><p>When set to true, skips verifying that the schema produced by planning the input of <code class="docutils literal notranslate"><span class="pre">LogicalPlan::Aggregate</span></code> exactly matches the schema of the input plan. When set to false, if the schema does not match exactly (including nullability and metadata), a planning error will be raised. This is used to workaround bugs in the planner that are now caught by the new schema verification step.</p></td>
 </tr>
-<tr class="row-odd"><td><p>datafusion.execution.spill_compression</p></td>
+<tr class="row-even"><td><p>datafusion.execution.spill_compression</p></td>
 <td><p>uncompressed</p></td>
 <td><p>Sets the compression codec used when spilling data to disk. Since datafusion writes spill files using the Arrow IPC Stream format, only codecs supported by the Arrow IPC Stream Writer are allowed. Valid values are: uncompressed, lz4_frame, zstd. Note: lz4_frame offers faster (de)compression, but typically results in larger spill files. In contrast, zstd achieves higher compression ratios at the cost of slower (de)compression speed.</p></td>
 </tr>
-<tr class="row-even"><td><p>datafusion.execution.sort_spill_reservation_bytes</p></td>
+<tr class="row-odd"><td><p>datafusion.execution.sort_spill_reservation_bytes</p></td>
 <td><p>10485760</p></td>
 <td><p>Specifies the reserved memory for each spillable sort operation to facilitate an in-memory merge. When a sort operation spills to disk, the in-memory data must be sorted and merged before being written to a file. This setting reserves a specific amount of memory for that in-memory sort/merge process. Note: This setting is irrelevant if the sort operation cannot spill (i.e., if there’s no <code class="docutils literal notranslate"><span class="pre">DiskManager</span></code> configured).</p></td>
 </tr>
-<tr class="row-odd"><td><p>datafusion.execution.sort_in_place_threshold_bytes</p></td>
+<tr class="row-even"><td><p>datafusion.execution.sort_in_place_threshold_bytes</p></td>
 <td><p>1048576</p></td>
 <td><p>When sorting, below what size should data be concatenated and sorted in a single RecordBatch rather than sorted in batches and merged.</p></td>
 </tr>
-<tr class="row-even"><td><p>datafusion.execution.meta_fetch_concurrency</p></td>
+<tr class="row-odd"><td><p>datafusion.execution.meta_fetch_concurrency</p></td>
 <td><p>32</p></td>
 <td><p>Number of files to read in parallel when inferring schema and statistics</p></td>
 </tr>
-<tr class="row-odd"><td><p>datafusion.execution.minimum_parallel_output_files</p></td>
+<tr class="row-even"><td><p>datafusion.execution.minimum_parallel_output_files</p></td>
 <td><p>4</p></td>
 <td><p>Guarantees a minimum level of output files running in parallel. RecordBatches will be distributed in round robin fashion to each parallel writer. Each writer is closed and a new file opened once soft_max_rows_per_output_file is reached.</p></td>
 </tr>
-<tr class="row-even"><td><p>datafusion.execution.soft_max_rows_per_output_file</p></td>
+<tr class="row-odd"><td><p>datafusion.execution.soft_max_rows_per_output_file</p></td>
 <td><p>50000000</p></td>
 <td><p>Target number of rows in output files when writing multiple. This is a soft max, so it can be exceeded slightly. There also will be one file smaller than the limit if the total number of rows written is not roughly divisible by the soft max</p></td>
 </tr>
-<tr class="row-odd"><td><p>datafusion.execution.max_buffered_batches_per_output_file</p></td>
+<tr class="row-even"><td><p>datafusion.execution.max_buffered_batches_per_output_file</p></td>
 <td><p>2</p></td>
 <td><p>This is the maximum number of RecordBatches buffered for each output file being worked. Higher values can potentially give faster write performance at the cost of higher peak memory consumption</p></td>
 </tr>
-<tr class="row-even"><td><p>datafusion.execution.listing_table_ignore_subdirectory</p></td>
+<tr class="row-odd"><td><p>datafusion.execution.listing_table_ignore_subdirectory</p></td>
 <td><p>true</p></td>
 <td><p>Should sub directories be ignored when scanning directories for data files. Defaults to true (ignores subdirectories), consistent with Hive. Note that this setting does not affect reading partitioned tables (e.g. <code class="docutils literal notranslate"><span class="pre">/table/year=2021/month=01/data.parquet</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p>datafusion.execution.listing_table_factory_infer_partitions</p></td>
+<td><p>true</p></td>
+<td><p>Should a <code class="docutils literal notranslate"><span class="pre">ListingTable</span></code> created through the <code class="docutils literal notranslate"><span class="pre">ListingTableFactory</span></code> infer table partitions from Hive compliant directories. Defaults to true (partition columns are inferred and will be represented in the table schema).</p></td>
 </tr>
 <tr class="row-odd"><td><p>datafusion.execution.enable_recursive_ctes</p></td>
 <td><p>true</p></td>

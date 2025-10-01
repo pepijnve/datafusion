@@ -24,7 +24,7 @@
     
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
-    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=c6d785ac" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=955f83bf" />
     
     <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
   
@@ -488,15 +488,27 @@
    </li>
   </ul>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../contributor-guide/gsoc_application_guidelines.html">
-   GSoC Application Guidelines
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../contributor-guide/gsoc/index.html">
+   Google Summer of Code (GSOC)
   </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../contributor-guide/gsoc_project_ideas.html">
-   GSoC Project Ideas
-  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+  <label for="toctree-checkbox-5">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../contributor-guide/gsoc/gsoc_application_guidelines_2025.html">
+     GSoC Application Guidelines (2025)
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../contributor-guide/gsoc/gsoc_project_ideas_2025.html">
+     GSoC Project Ideas (2025)
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
@@ -550,6 +562,28 @@
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion-51-0-0">
+   DataFusion
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     51.0.0
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#msrv-updated-to-1-87-0">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MSRV
+      </span>
+     </code>
+     updated to 1.87.0
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#datafusion-50-0-0">
    DataFusion
    <code class="docutils literal notranslate">
@@ -559,6 +593,11 @@
    </code>
   </a>
   <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#listingtable-automatically-detects-hive-partitioned-tables">
+     ListingTable automatically detects Hive Partitioned tables
+    </a>
+   </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#msrv-updated-to-1-86-0">
      <code class="docutils literal notranslate">
@@ -1295,10 +1334,26 @@
 -->
 <section id="upgrade-guides">
 <h1>Upgrade Guides<a class="headerlink" href="#upgrade-guides" title="Link to this heading">¶</a></h1>
+<section id="datafusion-51-0-0">
+<h2>DataFusion <code class="docutils literal notranslate"><span class="pre">51.0.0</span></code><a class="headerlink" href="#datafusion-51-0-0" title="Link to this heading">¶</a></h2>
+<p><strong>Note:</strong> DataFusion <code class="docutils literal notranslate"><span class="pre">51.0.0</span></code> has not been released yet. The information provided in this section pertains to features and changes that have already been merged to the main branch and are awaiting release in this version.</p>
+<p>You can see the current <a class="reference external" href="https://github.com/apache/datafusion/issues/17558">status of the <code class="docutils literal notranslate"><span class="pre">51.0.0</span> </code>release here</a></p>
+<section id="msrv-updated-to-1-87-0">
+<h3><code class="docutils literal notranslate"><span class="pre">MSRV</span></code> updated to 1.87.0<a class="headerlink" href="#msrv-updated-to-1-87-0" title="Link to this heading">¶</a></h3>
+<p>The Minimum Supported Rust Version (MSRV) has been updated to <a class="reference external" href="https://releases.rs/docs/1.87.0/"><code class="docutils literal notranslate"><span class="pre">1.87.0</span></code></a>.</p>
+</section>
+</section>
 <section id="datafusion-50-0-0">
 <h2>DataFusion <code class="docutils literal notranslate"><span class="pre">50.0.0</span></code><a class="headerlink" href="#datafusion-50-0-0" title="Link to this heading">¶</a></h2>
-<p><strong>Note:</strong> DataFusion <code class="docutils literal notranslate"><span class="pre">50.0.0</span></code> has not been released yet. The information provided in this section pertains to features and changes that have already been merged to the main branch and are awaiting release in this version.
-You can see the current <a class="reference external" href="https://github.com/apache/datafusion/issues/16799">status of the <code class="docutils literal notranslate"><span class="pre">50.0.0</span> </code>release here</a></p>
+<section id="listingtable-automatically-detects-hive-partitioned-tables">
+<h3>ListingTable automatically detects Hive Partitioned tables<a class="headerlink" href="#listingtable-automatically-detects-hive-partitioned-tables" title="Link to this heading">¶</a></h3>
+<p>DataFusion 50.0.0 automatically infers Hive partitions when using the <code class="docutils literal notranslate"><span class="pre">ListingTableFactory</span></code> and <code class="docutils literal notranslate"><span class="pre">CREATE</span> <span class="pre">EXTERNAL</span> <span class="pre">TABLE</span></code>. Previously,
+when creating a <code class="docutils literal notranslate"><span class="pre">ListingTable</span></code>, datasets that use Hive partitioning (e.g.
+<code class="docutils literal notranslate"><span class="pre">/table_root/column1=value1/column2=value2/data.parquet</span></code>) would not have the Hive columns reflected in
+the table’s schema or data. The previous behavior can be
+restored by setting the <code class="docutils literal notranslate"><span class="pre">datafusion.execution.listing_table_factory_infer_partitions</span></code> configuration option to <code class="docutils literal notranslate"><span class="pre">false</span></code>.
+See <a class="reference external" href="https://github.com/apache/datafusion/issues/17049">issue #17049</a> for more details.</p>
+</section>
 <section id="msrv-updated-to-1-86-0">
 <h3><code class="docutils literal notranslate"><span class="pre">MSRV</span></code> updated to 1.86.0<a class="headerlink" href="#msrv-updated-to-1-86-0" title="Link to this heading">¶</a></h3>
 <p>The Minimum Supported Rust Version (MSRV) has been updated to <a class="reference external" href="https://releases.rs/docs/1.86.0/"><code class="docutils literal notranslate"><span class="pre">1.86.0</span></code></a>.

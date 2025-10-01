@@ -24,7 +24,7 @@
     
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
-    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=c6d785ac" />
+    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=955f83bf" />
     
     <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
   
@@ -488,15 +488,27 @@
    </li>
   </ul>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../contributor-guide/gsoc_application_guidelines.html">
-   GSoC Application Guidelines
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../contributor-guide/gsoc/index.html">
+   Google Summer of Code (GSOC)
   </a>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../contributor-guide/gsoc_project_ideas.html">
-   GSoC Project Ideas
-  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+  <label for="toctree-checkbox-5">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../contributor-guide/gsoc/gsoc_application_guidelines_2025.html">
+     GSoC Application Guidelines (2025)
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../contributor-guide/gsoc/gsoc_project_ideas_2025.html">
+     GSoC Project Ideas (2025)
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
@@ -838,6 +850,31 @@ table (multiple files with the same schema)</p>
 <span class="n">STORED</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">CSV</span>
 <span class="k">LOCATION</span><span class="w"> </span><span class="s1">&#39;/path/to/directory/of/files&#39;</span>
 <span class="k">OPTIONS</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;has_header&#39;</span><span class="w"> </span><span class="s1">&#39;true&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Tables that are partitioned using a Hive compliant partitioning scheme will have their columns and values automatically
+detected and incorporated into the table’s schema and data. Given the following example directory structure:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">hive_partitioned/</span>
+<span class="go">├── a=1</span>
+<span class="go">│   └── b=200</span>
+<span class="go">│       └── file1.parquet</span>
+<span class="go">└── a=2</span>
+<span class="go">    └── b=100</span>
+<span class="go">        └── file2.parquet</span>
+</pre></div>
+</div>
+<p>Users can specify the top level <code class="docutils literal notranslate"><span class="pre">hive_partitioned</span></code> directory as an <code class="docutils literal notranslate"><span class="pre">EXTERNAL</span> <span class="pre">TABLE</span></code> and leverage the Hive partitions to query
+and filter data.</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="k">CREATE</span><span class="w"> </span><span class="k">EXTERNAL</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">hive_partitioned</span>
+<span class="n">STORED</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">PARQUET</span>
+<span class="k">LOCATION</span><span class="w"> </span><span class="s1">&#39;/path/to/hive_partitioned/&#39;</span><span class="p">;</span>
+
+<span class="k">SELECT</span><span class="w"> </span><span class="k">count</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">hive_partitioned</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">b</span><span class="o">=</span><span class="mi">100</span><span class="p">;</span>
+<span class="o">+</span><span class="c1">------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="k">count</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w">         </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">------------------+</span>
+<span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="w">                </span><span class="o">|</span>
+<span class="o">+</span><span class="c1">------------------+</span>
 </pre></div>
 </div>
 </section>
