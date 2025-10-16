@@ -21,9 +21,7 @@ use arrow::compute::{and, is_not_null, is_null};
 use arrow::datatypes::{DataType, Field, FieldRef};
 use datafusion_common::{exec_err, internal_err, Result};
 use datafusion_expr::binary::try_type_union_resolution;
-use datafusion_expr::{
-    ColumnarValue, Documentation, ReturnFieldArgs, ScalarFunctionArgs,
-};
+use datafusion_expr::{ColumnarValue, Documentation, Expr, ReturnFieldArgs, ScalarFunctionArgs};
 use datafusion_expr::{ScalarUDFImpl, Signature, Volatility};
 use datafusion_macros::user_doc;
 use itertools::Itertools;
@@ -48,7 +46,7 @@ use std::any::Any;
 )]
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct CoalesceFunc {
-    signature: Signature,
+    pub(super) signature: Signature,
 }
 
 impl Default for CoalesceFunc {
@@ -150,6 +148,15 @@ impl ScalarUDFImpl for CoalesceFunc {
                 .unwrap_or_else(|| args[0].clone());
             Ok(result)
         }
+    }
+
+    fn conditional_arguments<'a>(
+        &self,
+        args: &'a [Expr],
+    ) -> Option<(Vec<&'a Expr>, Vec<&'a Expr>)> {
+        let eager = vec![&args[0]];
+        let lazy = args[1..].iter().collect();
+        Some((eager, lazy))
     }
 
     fn short_circuits(&self) -> bool {
