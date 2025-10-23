@@ -121,7 +121,7 @@ impl ScalarUDFImpl for NowFunc {
     ) -> Result<ExprSimplifyResult> {
         let now_ts = info
             .execution_props()
-            .query_execution_start_time
+            .query_execution_start_time()?
             .timestamp_nanos_opt();
 
         Ok(ExprSimplifyResult::Simplified(Expr::Literal(

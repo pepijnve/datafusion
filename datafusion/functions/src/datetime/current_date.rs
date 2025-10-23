@@ -102,7 +102,7 @@ impl ScalarUDFImpl for CurrentDateFunc {
         _args: Vec<Expr>,
         info: &dyn SimplifyInfo,
     ) -> Result<ExprSimplifyResult> {
-        let now_ts = info.execution_props().query_execution_start_time;
+        let now_ts = info.execution_props().query_execution_start_time()?;
 
         // Get timezone from config and convert to local time
         let days = info

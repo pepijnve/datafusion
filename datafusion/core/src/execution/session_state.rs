@@ -1946,8 +1946,8 @@ impl FunctionRegistry for SessionState {
 }
 
 impl OptimizerConfig for SessionState {
-    fn query_execution_start_time(&self) -> DateTime<Utc> {
-        self.execution_props.query_execution_start_time
+    fn query_execution_start_time(&self) -> datafusion_common::error::Result<DateTime<Utc>> {
+        self.execution_props.query_execution_start_time()
     }
 
     fn alias_generator(&self) -> &Arc<AliasGenerator> {

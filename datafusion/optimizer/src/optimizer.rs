@@ -102,7 +102,7 @@ pub trait OptimizerRule: Debug {
 pub trait OptimizerConfig {
     /// Return the time at which the query execution started. This
     /// time is used as the value for now()
-    fn query_execution_start_time(&self) -> DateTime<Utc>;
+    fn query_execution_start_time(&self) -> Result<DateTime<Utc>>;
 
     /// Return alias generator used to generate unique aliases for subqueries
     fn alias_generator(&self) -> &Arc<AliasGenerator>;
@@ -186,8 +186,8 @@ impl Default for OptimizerContext {
 }
 
 impl OptimizerConfig for OptimizerContext {
-    fn query_execution_start_time(&self) -> DateTime<Utc> {
-        self.query_execution_start_time
+    fn query_execution_start_time(&self) -> Result<DateTime<Utc>> {
+        Ok(self.query_execution_start_time)
     }
 
     fn alias_generator(&self) -> &Arc<AliasGenerator> {

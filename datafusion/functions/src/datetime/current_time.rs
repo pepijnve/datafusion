@@ -98,7 +98,7 @@ impl ScalarUDFImpl for CurrentTimeFunc {
         _args: Vec<Expr>,
         info: &dyn SimplifyInfo,
     ) -> Result<ExprSimplifyResult> {
-        let now_ts = info.execution_props().query_execution_start_time;
+        let now_ts = info.execution_props().query_execution_start_time()?;
 
         // Try to get timezone from config and convert to local time
         let nano = info

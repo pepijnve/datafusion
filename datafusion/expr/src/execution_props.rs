@@ -16,10 +16,10 @@
 // under the License.
 
 use crate::var_provider::{VarProvider, VarType};
-use chrono::{DateTime, TimeZone, Utc};
+use chrono::{DateTime, Utc};
 use datafusion_common::alias::AliasGenerator;
 use datafusion_common::config::ConfigOptions;
-use datafusion_common::HashMap;
+use datafusion_common::{exec_err, HashMap};
 use std::sync::Arc;
 
 /// Holds per-query execution properties and data (such as statement
@@ -33,7 +33,7 @@ use std::sync::Arc;
 /// done so during predicate pruning and expression simplification
 #[derive(Clone, Debug)]
 pub struct ExecutionProps {
-    pub query_execution_start_time: DateTime<Utc>,
+    pub query_execution_start_time: Option<DateTime<Utc>>,
     /// Alias generator used by subquery optimizer rules
     pub alias_generator: Arc<AliasGenerator>,
     /// Snapshot of config options when the query started
@@ -54,7 +54,7 @@ impl ExecutionProps {
         ExecutionProps {
             // Set this to a fixed sentinel to make it obvious if this is
             // not being updated / propagated correctly
-            query_execution_start_time: Utc.timestamp_nanos(0),
+            query_execution_start_time: None,
             alias_generator: Arc::new(AliasGenerator::new()),
             config_options: None,
             var_providers: None,
@@ -66,7 +66,7 @@ impl ExecutionProps {
         mut self,
         query_execution_start_time: DateTime<Utc>,
     ) -> Self {
-        self.query_execution_start_time = query_execution_start_time;
+        self.query_execution_start_time = Some(query_execution_start_time);
         self
     }
 
@@ -79,10 +79,17 @@ impl ExecutionProps {
     /// Marks the execution of query started timestamp.
     /// This also instantiates a new alias generator.
     pub fn mark_start_execution(&mut self, config_options: Arc<ConfigOptions>) -> &Self {
-        self.query_execution_start_time = Utc::now();
+        self.query_execution_start_time = Some(Utc::now());
         self.alias_generator = Arc::new(AliasGenerator::new());
         self.config_options = Some(config_options);
         &*self
+    }
+
+    pub fn query_execution_start_time(&self) -> datafusion_common::error::Result<DateTime<Utc>> {
+        match self.query_execution_start_time {
+            None => exec_err!("Query execution not started"),
+            Some(t) => Ok(t),
+        }
     }
 
     /// Registers a variable provider, returning the existing
