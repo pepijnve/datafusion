@@ -148,6 +148,20 @@ pub fn replace_col(expr: Expr, replace_map: &HashMap<&Column, &Column>) -> Resul
     .data()
 }
 
+/// Recursively replace all [`Expr`] expressions in a given expression tree with
+/// [`Expr`] expressions provided by the hash map argument.
+pub fn replace_expr(expr: Expr, replace_map: &HashMap<&Expr, &Expr>) -> Result<Expr> {
+    expr.transform(|expr| {
+        Ok({
+            match replace_map.get(&expr) {
+                Some(new_expr) => Transformed::yes((*new_expr).clone()),
+                None => Transformed::no(expr),
+            }
+        })
+    })
+        .data()
+}
+
 /// Recursively 'unnormalize' (remove all qualifiers) from an
 /// expression tree.
 ///

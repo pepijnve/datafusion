@@ -26,7 +26,7 @@ use datafusion_common::cast::as_boolean_array;
 use datafusion_common::tree_node::{TransformedResult, TreeNode};
 use datafusion_common::{Column, DFSchema, Result, ScalarValue};
 use datafusion_expr::execution_props::ExecutionProps;
-use datafusion_expr::expr_rewriter::replace_col;
+use datafusion_expr::expr_rewriter::{replace_col, replace_expr};
 use datafusion_expr::{logical_plan::LogicalPlan, ColumnarValue, Expr};
 use datafusion_physical_expr::create_physical_expr;
 use log::{debug, trace};
@@ -141,6 +141,34 @@ fn evaluate_expr_with_null_column<'a>(
         .collect::<HashMap<_, _>>();
 
     let replaced_predicate = replace_col(predicate, &join_cols_to_replace)?;
+    let coerced_predicate = coerce(replaced_predicate, &input_schema)?;
+    create_physical_expr(&coerced_predicate, &input_schema, &execution_props)?
+        .evaluate(&input_batch)
+}
+
+fn evaluate_expr_with_null_expr(
+    predicate: Expr,
+    null_expr: &Expr,
+) -> Result<ColumnarValue> {
+    evaluate_expr_with_null_exprs(predicate, std::iter::once(null_expr))
+}
+
+fn evaluate_expr_with_null_exprs<'a>(
+    predicate: Expr,
+    null_exprs: impl IntoIterator<Item = &'a Expr>,
+) -> Result<ColumnarValue> {
+    let null = Expr::Literal(ScalarValue::Null, None);
+    let schema = Arc::new(Schema::empty());
+    let input_schema = DFSchema::try_from(Arc::clone(&schema))?;
+    let input_batch = RecordBatch::new_empty(schema);
+    let execution_props = ExecutionProps::default();
+
+    let join_cols_to_replace = null_exprs
+        .into_iter()
+        .map(|expr| (expr, &null))
+        .collect::<HashMap<_, _>>();
+
+    let replaced_predicate = replace_expr(predicate, &join_cols_to_replace)?;
     let coerced_predicate = coerce(replaced_predicate, &input_schema)?;
     create_physical_expr(&coerced_predicate, &input_schema, &execution_props)?
         .evaluate(&input_batch)

@@ -20,9 +20,9 @@
 use std::cmp::Ordering;
 use std::collections::{BTreeSet, HashSet};
 use std::sync::Arc;
-
+use arrow::array::RecordBatch;
 use crate::expr::{Alias, Sort, WildcardOptions, WindowFunctionParams};
-use crate::expr_rewriter::strip_outer_reference;
+use crate::expr_rewriter::{replace_expr, strip_outer_reference};
 use crate::{
     and, BinaryExpr, Expr, ExprSchemable, Filter, GroupingSet, LogicalPlan, Operator,
 };
@@ -33,10 +33,7 @@ use datafusion_common::tree_node::{
     Transformed, TransformedResult, TreeNode, TreeNodeRecursion,
 };
 use datafusion_common::utils::get_at_indices;
-use datafusion_common::{
-    internal_err, plan_datafusion_err, plan_err, Column, DFSchema, DFSchemaRef, HashMap,
-    Result, TableReference,
-};
+use datafusion_common::{internal_err, plan_datafusion_err, plan_err, Column, DFSchema, DFSchemaRef, HashMap, Result, ScalarValue, TableReference};
 
 #[cfg(not(feature = "sql"))]
 use crate::expr::{ExceptSelectItem, ExcludeSelectItem};
@@ -49,6 +46,8 @@ pub use datafusion_functions_aggregate_common::order::AggregateOrderSensitivity;
 ///  The value to which `COUNT(*)` is expanded to in
 ///  `COUNT(<constant>)` expressions
 pub use datafusion_common::utils::expr::COUNT_STAR_EXPANSION;
+use datafusion_expr_common::columnar_value::ColumnarValue;
+use crate::execution_props::ExecutionProps;
 
 /// Count the number of distinct exprs in a list of group by expressions. If the
 /// first element is a `GroupingSet` expression then it must be the only expr.
@@ -1282,6 +1281,39 @@ pub fn collect_subquery_cols(
         cols.extend(using_cols);
         Result::<_>::Ok(cols)
     })
+}
+
+fn evaluate_expr_with_null_expr(
+    predicate: Expr,
+    null_expr: &Expr,
+) -> Result<ColumnarValue> {
+    evaluate_expr_with_null_exprs(predicate, std::iter::once(null_expr))
+}
+
+fn evaluate_expr_with_null_exprs<'a>(
+    predicate: Expr,
+    null_exprs: impl IntoIterator<Item = &'a Expr>,
+) -> Result<ColumnarValue> {
+    let null = Expr::Literal(ScalarValue::Null, None);
+    let schema = Arc::new(Schema::empty());
+    let input_schema = DFSchema::try_from(Arc::clone(&schema))?;
+    let input_batch = RecordBatch::new_empty(schema);
+    let execution_props = ExecutionProps::default();
+
+    let join_cols_to_replace = null_exprs
+        .into_iter()
+        .map(|expr| (expr, &null))
+        .collect::<std::collections::HashMap<_, _>>();
+
+    let replaced_predicate = replace_expr(predicate, &join_cols_to_replace)?;
+    let coerced_predicate = coerce(replaced_predicate, &input_schema)?;
+    create_physical_expr(&coerced_predicate, &input_schema, &execution_props)?
+        .evaluate(&input_batch)
+}
+
+fn coerce(expr: Expr, schema: &DFSchema) -> Result<Expr> {
+    let mut expr_rewrite = TypeCoercionRewriter { schema };
+    expr.rewrite(&mut expr_rewrite).data()
 }
 
 #[cfg(test)]

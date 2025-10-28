@@ -283,7 +283,14 @@ impl ExprSchemable for Expr {
                 let then_nullable = case
                     .when_then_expr
                     .iter()
-                    .map(|(_, t)| t.nullable(input_schema))
+                    .filter_map(|(when, then)| {
+                        match then.nullable(input_schema) {
+                            Ok(false) => return None,
+                            e @ Err(_) => return Some(e),
+                        }
+
+                        when.nullable(input_schema)?
+                    })
                     .collect::<Result<Vec<_>>>()?;
                 if then_nullable.contains(&true) {
                     Ok(true)
