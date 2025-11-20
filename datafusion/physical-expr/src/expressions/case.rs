@@ -85,7 +85,7 @@ enum EvalMethod {
 /// Implementing hash so we can use `derive` on [`EvalMethod`].
 ///
 /// not implementing actual [`Hash`] as it is not dyn compatible so we cannot implement it for
-/// `dyn` [`literal_lookup_table::WhenLiteralIndexMap`].
+/// `dyn` [`literal_lookup_table::ScalarIndexMap`].
 ///
 /// So implementing empty hash is still valid as the data is derived from `PhysicalExpr` s which are already hashed
 impl Hash for LiteralLookupTable {
@@ -95,7 +95,7 @@ impl Hash for LiteralLookupTable {
 /// Implementing Equal so we can use `derive` on [`EvalMethod`].
 ///
 /// not implementing actual [`PartialEq`] as it is not dyn compatible so we cannot implement it for
-/// `dyn` [`literal_lookup_table::WhenLiteralIndexMap`].
+/// `dyn` [`literal_lookup_table::ScalarIndexMap`].
 ///
 /// So we always return true as the data is derived from `PhysicalExpr` s which are already compared
 impl PartialEq for LiteralLookupTable {
@@ -819,8 +819,8 @@ impl CaseExpr {
 
     fn find_best_eval_method(body: &CaseBody) -> Result<EvalMethod> {
         if body.expr.is_some() {
-            if let Some(mapping) = LiteralLookupTable::maybe_new(body) {
-                return Ok(EvalMethod::WithExprScalarLookupTable(mapping));
+            if let Ok(lookup_table) = LiteralLookupTable::try_from(body) {
+                return Ok(EvalMethod::WithExprScalarLookupTable(lookup_table));
             }
 
             return Ok(EvalMethod::WithExpression(body.project()?));

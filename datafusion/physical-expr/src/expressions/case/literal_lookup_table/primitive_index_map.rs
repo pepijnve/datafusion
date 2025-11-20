@@ -15,10 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::expressions::case::literal_lookup_table::WhenLiteralIndexMap;
+use crate::expressions::case::literal_lookup_table::ScalarIndexMap;
 use arrow::array::{Array, ArrayRef, ArrowNativeTypeOp, ArrowPrimitiveType, AsArray};
 use arrow::datatypes::{i256, IntervalDayTime, IntervalMonthDayNano};
-use datafusion_common::{internal_err, HashMap, ScalarValue};
+use datafusion_common::{internal_err, DataFusionError, HashMap, ScalarValue};
 use half::f16;
 use std::fmt::Debug;
 use std::hash::Hash;
@@ -29,9 +29,9 @@ where
     T: ArrowPrimitiveType,
     T::Native: ToHashableKey,
 {
-    /// Literal value to map index
+    /// Scalar value to index
     ///
-    /// If searching this map becomes a bottleneck consider using linear map implementations for small hashmaps
+    /// If searching this map becomes a bottleneck, consider using linear map implementations for small hashmaps
     map: HashMap<<T::Native as ToHashableKey>::HashableKey, u32>,
 }
 
@@ -47,23 +47,23 @@ where
     }
 }
 
-impl<T> PrimitiveIndexMap<T>
+impl<T> TryFrom<Vec<ScalarValue>> for PrimitiveIndexMap<T>
 where
     T: ArrowPrimitiveType,
     T::Native: ToHashableKey,
 {
-    /// Try creating a new lookup table from the given literals and else index.
-    /// The index of each literal in the vector is used as the mapped value in the lookup table.
-    ///
-    /// `literals` are guaranteed to be unique and non-nullable
-    pub(super) fn try_new(
-        unique_non_null_literals: Vec<ScalarValue>,
-    ) -> datafusion_common::Result<Self> {
-        let input = ScalarValue::iter_to_array(unique_non_null_literals)?;
+    type Error = DataFusionError;
 
-        // Literals are guaranteed to not contain nulls
+    /// Try creating a new lookup table from the given scalars and else index.
+    /// The index of each scalar in the vector is used as the mapped value in the lookup table.
+    ///
+    /// `scalars` are guaranteed to be unique and non-nullable
+    fn try_from(unique_non_null_scalars: Vec<ScalarValue>) -> Result<Self, Self::Error> {
+        let input = ScalarValue::iter_to_array(unique_non_null_scalars)?;
+
+        // Scalars are guaranteed to not contain nulls
         if input.null_count() > 0 {
-            return internal_err!("Literal values for WHEN clauses cannot contain nulls");
+            return internal_err!("Scalar values for WHEN clauses cannot contain nulls");
         }
 
         let map = input
@@ -71,7 +71,7 @@ where
             .values()
             .iter()
             .enumerate()
-            // Because literals are unique we can collect directly, and we can avoid only inserting the first occurrence
+            // Because scalars are unique we can collect directly, and we can avoid only inserting the first occurrence
             .map(|(map_index, value)| (value.into_hashable_key(), map_index as u32))
             .collect();
 
@@ -79,15 +79,15 @@ where
     }
 }
 
-impl<T> WhenLiteralIndexMap for PrimitiveIndexMap<T>
+impl<T> ScalarIndexMap for PrimitiveIndexMap<T>
 where
     T: ArrowPrimitiveType,
     T::Native: ToHashableKey,
 {
-    fn map_to_when_indices(
+    fn map_to_indices(
         &self,
         array: &ArrayRef,
-        else_index: u32,
+        default_index: u32,
     ) -> datafusion_common::Result<Vec<u32>> {
         let indices = array
             .as_primitive::<T>()
@@ -97,9 +97,9 @@ where
                     .map
                     .get(&value.into_hashable_key())
                     .copied()
-                    .unwrap_or(else_index),
+                    .unwrap_or(default_index),
 
-                None => else_index,
+                None => default_index,
             })
             .collect::<Vec<u32>>();
 

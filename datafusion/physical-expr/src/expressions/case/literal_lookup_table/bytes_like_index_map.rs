@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::expressions::case::literal_lookup_table::WhenLiteralIndexMap;
+use crate::expressions::case::literal_lookup_table::ScalarIndexMap;
 use arrow::array::{
     ArrayIter, ArrayRef, AsArray, FixedSizeBinaryArray, FixedSizeBinaryIter,
     GenericByteArray, GenericByteViewArray, TypedDictionaryArray,
@@ -185,12 +185,12 @@ where
     }
 }
 
-/// Map from byte-like literal values to their first occurrence index
+/// Map from byte-like scalar values to their first occurrence index
 ///
-/// This is a wrapper for handling different kinds of literal maps
+/// This is a wrapper for handling different kinds of scalar maps
 #[derive(Clone)]
 pub(super) struct BytesLikeIndexMap<Helper: BytesMapHelperWrapperTrait> {
-    /// Map from non-null literal value the first occurrence index in the literals
+    /// Map from non-null scalar value the first occurrence index in the scalars
     map: HashMap<Vec<u8>, u32>,
 
     _phantom_data: PhantomData<Helper>,
@@ -204,29 +204,31 @@ impl<T: BytesMapHelperWrapperTrait> Debug for BytesLikeIndexMap<T> {
     }
 }
 
-impl<Helper: BytesMapHelperWrapperTrait> BytesLikeIndexMap<Helper> {
-    /// Try creating a new lookup table from the given literals and else index
-    /// The index of each literal in the vector is used as the mapped value in the lookup table.
-    ///
-    /// `literals` are guaranteed to be unique and non-nullable
-    pub(super) fn try_new(
-        unique_non_null_literals: Vec<ScalarValue>,
-    ) -> datafusion_common::Result<Self> {
-        let input = ScalarValue::iter_to_array(unique_non_null_literals)?;
+impl<Helper: BytesMapHelperWrapperTrait> TryFrom<Vec<ScalarValue>>
+    for BytesLikeIndexMap<Helper>
+{
+    type Error = datafusion_common::DataFusionError;
 
-        // Literals are guaranteed to not contain nulls
+    /// Try creating a new lookup table from the given scalars
+    /// The index of each scalar in the vector is used as the mapped value in the lookup table.
+    ///
+    /// `unique_non_null_scalars` are guaranteed to be unique and non-nullable
+    fn try_from(unique_non_null_scalars: Vec<ScalarValue>) -> Result<Self, Self::Error> {
+        let input = ScalarValue::iter_to_array(unique_non_null_scalars)?;
+
+        // Scalars are guaranteed to not contain nulls
         if input.null_count() > 0 {
-            return internal_err!("Literal values for WHEN clauses cannot contain nulls");
+            return internal_err!("Scalar values for WHEN clauses cannot contain nulls");
         }
 
         let bytes_iter = Helper::array_to_iter(&input)?;
 
         let map: HashMap<Vec<u8>, u32> = bytes_iter
-            // Flattening Option<&[u8]> to &[u8] as literals cannot contain nulls
+            // Flattening Option<&[u8]> to &[u8] as scalars cannot contain nulls
             .flatten()
             .enumerate()
             .map(|(map_index, value): (usize, &[u8])| (value.to_vec(), map_index as u32))
-            // Because literals are unique we can collect directly, and we can avoid only inserting the first occurrence
+            // Because scalars are unique we can collect directly, and we can avoid only inserting the first occurrence
             .collect();
 
         Ok(Self {
@@ -236,19 +238,17 @@ impl<Helper: BytesMapHelperWrapperTrait> BytesLikeIndexMap<Helper> {
     }
 }
 
-impl<Helper: BytesMapHelperWrapperTrait> WhenLiteralIndexMap
-    for BytesLikeIndexMap<Helper>
-{
-    fn map_to_when_indices(
+impl<Helper: BytesMapHelperWrapperTrait> ScalarIndexMap for BytesLikeIndexMap<Helper> {
+    fn map_to_indices(
         &self,
         array: &ArrayRef,
-        else_index: u32,
+        default_index: u32,
     ) -> datafusion_common::Result<Vec<u32>> {
         let bytes_iter = Helper::array_to_iter(array)?;
         let indices = bytes_iter
             .map(|value| match value {
-                Some(value) => self.map.get(value).copied().unwrap_or(else_index),
-                None => else_index,
+                Some(value) => self.map.get(value).copied().unwrap_or(default_index),
+                None => default_index,
             })
             .collect::<Vec<u32>>();
 

@@ -15,9 +15,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::expressions::case::literal_lookup_table::WhenLiteralIndexMap;
+use crate::expressions::case::literal_lookup_table::ScalarIndexMap;
 use arrow::array::{ArrayRef, AsArray};
-use datafusion_common::{internal_err, ScalarValue};
+use datafusion_common::{internal_err, DataFusionError, ScalarValue};
 
 #[derive(Clone, Debug)]
 pub(super) struct BooleanIndexMap {
@@ -25,23 +25,23 @@ pub(super) struct BooleanIndexMap {
     false_index: Option<u32>,
 }
 
-impl BooleanIndexMap {
-    /// Try creating a new lookup table from the given literals and else index
-    /// The index of each literal in the vector is used as the mapped value in the lookup table.
+impl TryFrom<Vec<ScalarValue>> for BooleanIndexMap {
+    type Error = DataFusionError;
+
+    /// Try creating a new lookup table from the given scalars
+    /// The index of each scalar in the vector is used as the mapped value in the lookup table.
     ///
-    /// `literals` are guaranteed to be unique and non-nullable
-    pub(super) fn try_new(
-        unique_non_null_literals: Vec<ScalarValue>,
-    ) -> datafusion_common::Result<Self> {
+    /// `unique_non_null_scalars` are guaranteed to be unique and non-nullable
+    fn try_from(unique_non_null_scalars: Vec<ScalarValue>) -> Result<Self, Self::Error> {
         let mut true_index: Option<u32> = None;
         let mut false_index: Option<u32> = None;
 
-        for (index, literal) in unique_non_null_literals.into_iter().enumerate() {
-            match literal {
+        for (index, scalar) in unique_non_null_scalars.into_iter().enumerate() {
+            match scalar {
                 ScalarValue::Boolean(Some(true)) => {
                     if true_index.is_some() {
                         return internal_err!(
-                            "Duplicate true literal found in literals for BooleanIndexMap"
+                            "Duplicate true value found in values for BooleanIndexMap"
                         );
                     }
                     true_index = Some(index as u32);
@@ -49,19 +49,19 @@ impl BooleanIndexMap {
                 ScalarValue::Boolean(Some(false)) => {
                     if false_index.is_some() {
                         return internal_err!(
-                            "Duplicate false literal found in literals for BooleanIndexMap"
+                            "Duplicate false value found in values for BooleanIndexMap"
                         );
                     }
                     false_index = Some(index as u32);
                 }
                 ScalarValue::Boolean(None) => {
                     return internal_err!(
-                        "Null literal found in non-null literals for BooleanIndexMap"
+                        "Null value found in non-null values for BooleanIndexMap"
                     )
                 }
                 _ => {
                     return internal_err!(
-                        "Non-boolean literal found in literals for BooleanIndexMap"
+                        "Non-boolean value found in values for BooleanIndexMap"
                     )
                 }
             }
@@ -74,14 +74,14 @@ impl BooleanIndexMap {
     }
 }
 
-impl WhenLiteralIndexMap for BooleanIndexMap {
-    fn map_to_when_indices(
+impl ScalarIndexMap for BooleanIndexMap {
+    fn map_to_indices(
         &self,
         array: &ArrayRef,
-        else_index: u32,
+        default_index: u32,
     ) -> datafusion_common::Result<Vec<u32>> {
-        let true_index = self.true_index.unwrap_or(else_index);
-        let false_index = self.false_index.unwrap_or(else_index);
+        let true_index = self.true_index.unwrap_or(default_index);
+        let false_index = self.false_index.unwrap_or(default_index);
 
         Ok(array
             .as_boolean()
@@ -89,7 +89,7 @@ impl WhenLiteralIndexMap for BooleanIndexMap {
             .map(|value| match value {
                 Some(true) => true_index,
                 Some(false) => false_index,
-                None => else_index,
+                None => default_index,
             })
             .collect::<Vec<u32>>())
     }
