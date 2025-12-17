@@ -340,6 +340,17 @@ pub fn make_cooperative(stream: SendableRecordBatchStream) -> SendableRecordBatc
     )))
 }
 
+/// Consumes a unit of budget. If the task budget has been depleted `Poll::Pending` is returned.
+/// Otherwise, `Poll::Ready(()))` is returned.
+///
+/// The task will only yield if its entire coop budget has been exhausted.
+/// This function can be used in order to insert optional yield points into long
+/// computations that do not use Tokio resources,
+/// without redundantly yielding to the runtime each time.
+pub fn consume_budget(cx: &mut Context<'_>) -> Poll<()> {
+    tokio::task::coop::poll_proceed(cx).map(|r| r.made_progress())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

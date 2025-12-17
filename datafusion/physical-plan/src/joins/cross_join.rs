@@ -25,7 +25,7 @@ use super::utils::{
     OnceAsync, OnceFut, StatefulStreamResult, adjust_right_output_partitioning,
     reorder_output_after_swap,
 };
-use crate::execution_plan::{EmissionType, boundedness_from_children};
+use crate::execution_plan::{EmissionType, boundedness_from_children, SchedulingType};
 use crate::metrics::{ExecutionPlanMetricsSet, MetricsSet};
 use crate::projection::{
     ProjectionExec, join_allows_pushdown, join_table_borders, new_join_children,
@@ -50,6 +50,7 @@ use datafusion_physical_expr::equivalence::join_equivalence_properties;
 
 use async_trait::async_trait;
 use futures::{Stream, StreamExt, TryStreamExt, ready};
+use crate::coop::{consume_budget};
 
 /// Data of the left side that is buffered into memory
 #[derive(Debug)]
@@ -171,7 +172,7 @@ impl CrossJoinExec {
             output_partitioning,
             EmissionType::Final,
             boundedness_from_children([left, right]),
-        ))
+        ).with_scheduling_type(SchedulingType::Cooperative))
     }
 
     /// Returns a new `ExecutionPlan` that computes the same join as this one,
@@ -581,6 +582,7 @@ impl<T: BatchTransformer> CrossJoinStream<T> {
                     handle_state!(ready!(self.fetch_probe_batch(cx)))
                 }
                 CrossJoinStreamState::BuildBatches(_) => {
+                    ready!(consume_budget(cx));
                     let poll = handle_state!(self.build_batches());
                     self.join_metrics.baseline.record_poll(poll)
                 }

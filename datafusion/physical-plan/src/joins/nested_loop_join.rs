@@ -29,7 +29,7 @@ use super::utils::{
     reorder_output_after_swap, swap_join_projection,
 };
 use crate::common::can_project;
-use crate::execution_plan::{EmissionType, boundedness_from_children};
+use crate::execution_plan::{EmissionType, boundedness_from_children, SchedulingType};
 use crate::joins::SharedBitmapBuilder;
 use crate::joins::utils::{
     BuildProbeJoinMetrics, ColumnIndex, JoinFilter, OnceAsync, OnceFut,
@@ -74,6 +74,7 @@ use datafusion_physical_expr::equivalence::{
 use futures::{Stream, StreamExt, TryStreamExt};
 use log::debug;
 use parking_lot::Mutex;
+use crate::coop::cooperative;
 
 #[expect(rustdoc::private_intra_doc_links)]
 /// NestedLoopJoinExec is a build-probe join operator designed for joins that
@@ -321,7 +322,7 @@ impl NestedLoopJoinExec {
             output_partitioning,
             emission_type,
             boundedness_from_children([left, right]),
-        ))
+        ).with_scheduling_type(SchedulingType::Cooperative))
     }
 
     /// This join implementation does not preserve the input order of either side.
@@ -529,7 +530,7 @@ impl ExecutionPlan for NestedLoopJoinExec {
             None => self.column_indices.clone(),
         };
 
-        Ok(Box::pin(NestedLoopJoinStream::new(
+        Ok(Box::pin(cooperative(NestedLoopJoinStream::new(
             self.schema(),
             self.filter.clone(),
             self.join_type,
@@ -538,7 +539,7 @@ impl ExecutionPlan for NestedLoopJoinExec {
             column_indices_after_projection,
             metrics,
             batch_size,
-        )))
+        ))))
     }
 
     fn metrics(&self) -> Option<MetricsSet> {
