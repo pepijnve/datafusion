@@ -24,7 +24,7 @@ use std::sync::Arc;
 
 use arrow::array::AsArray;
 use arrow::{
-    array::{ArrayRef, BooleanArray, new_null_array},
+    array::{new_null_array, ArrayRef, BooleanArray},
     datatypes::{DataType, Field, Schema, SchemaRef},
     record_batch::{RecordBatch, RecordBatchOptions},
 };
@@ -36,15 +36,15 @@ use log::{debug, trace};
 
 use datafusion_common::error::Result;
 use datafusion_common::tree_node::{TransformedResult, TreeNodeRecursion};
-use datafusion_common::{Column, DFSchema, assert_eq_or_internal_err};
+use datafusion_common::{assert_eq_or_internal_err, Column, DFSchema};
 use datafusion_common::{
-    ScalarValue, internal_datafusion_err, plan_datafusion_err, plan_err,
-    tree_node::{Transformed, TreeNode},
+    internal_datafusion_err, plan_datafusion_err, plan_err, tree_node::{Transformed, TreeNode},
+    ScalarValue,
 };
 use datafusion_expr_common::operator::Operator;
-use datafusion_physical_expr::expressions::CastColumnExpr;
+use datafusion_physical_expr::expressions::{lit, CastColumnExpr};
 use datafusion_physical_expr::utils::{Guarantee, LiteralGuarantee};
-use datafusion_physical_expr::{PhysicalExprRef, expressions as phys_expr};
+use datafusion_physical_expr::{expressions as phys_expr, PhysicalExprRef};
 use datafusion_physical_expr_common::physical_expr::snapshot_physical_expr_opt;
 use datafusion_physical_plan::{ColumnarValue, PhysicalExpr};
 
@@ -408,27 +408,17 @@ pub fn build_pruning_predicate(
 pub trait UnhandledPredicateHook {
     /// Called when a predicate can not be rewritten in terms of statistics or
     /// references a column that is not in the schema.
-    fn handle(&self, expr: &Arc<dyn PhysicalExpr>) -> Arc<dyn PhysicalExpr>;
+    fn handle(&self, expr: &Arc<dyn PhysicalExpr>) -> Option<Arc<dyn PhysicalExpr>>;
 }
 
-/// The default handling for unhandled predicates is to return a constant `true`
+/// The default handling for unhandled predicates is to return `None`
 /// (meaning don't prune the container)
-#[derive(Debug, Clone)]
-struct ConstantUnhandledPredicateHook {
-    default: Arc<dyn PhysicalExpr>,
-}
-
-impl Default for ConstantUnhandledPredicateHook {
-    fn default() -> Self {
-        Self {
-            default: Arc::new(phys_expr::Literal::new(ScalarValue::from(true))),
-        }
-    }
-}
+#[derive(Debug, Default, Clone)]
+struct ConstantUnhandledPredicateHook {}
 
 impl UnhandledPredicateHook for ConstantUnhandledPredicateHook {
-    fn handle(&self, _expr: &Arc<dyn PhysicalExpr>) -> Arc<dyn PhysicalExpr> {
-        Arc::clone(&self.default)
+    fn handle(&self, _expr: &Arc<dyn PhysicalExpr>) -> Option<Arc<dyn PhysicalExpr>> {
+        None
     }
 }
 
@@ -461,12 +451,12 @@ impl PruningPredicate {
     /// returns a new expression.
     /// It is recommended that you pass the expressions through [`PhysicalExprSimplifier`]
     /// before calling this method to make sure the expressions can be used for pruning.
-    pub fn try_new(mut expr: Arc<dyn PhysicalExpr>, schema: SchemaRef) -> Result<Self> {
+    pub fn try_new(expr: Arc<dyn PhysicalExpr>, schema: SchemaRef) -> Result<Self> {
         // Get a (simpler) snapshot of the physical expr here to use with `PruningPredicate`.
         // In particular this unravels any `DynamicFilterPhysicalExpr`s by snapshotting them
         // so that PruningPredicate can work with a static expression.
         let tf = snapshot_physical_expr_opt(expr)?;
-        if tf.transformed {
+        let expr = if tf.transformed {
             // If we had an expression such as Dynamic(part_col < 5 and col < 10)
             // (this could come from something like `select * from t order by part_col, col, limit 10`)
             // after snapshotting and because `DynamicFilterPhysicalExpr` applies child replacements to its
@@ -474,10 +464,11 @@ impl PruningPredicate {
             // the expression we have now is `8 < 5 and col < 10`.
             // Thus we need as simplifier pass to get `false and col < 10` => `false` here.
             let simplifier = PhysicalExprSimplifier::new(&schema);
-            expr = simplifier.simplify(tf.data)?;
+            simplifier.simplify(tf.data)?
         } else {
-            expr = tf.data;
-        }
+            tf.data
+        };
+
         let unhandled_hook = Arc::new(ConstantUnhandledPredicateHook::default()) as _;
 
         // build predicate expression once
@@ -487,11 +478,7 @@ impl PruningPredicate {
             &schema,
             &mut required_columns,
             &unhandled_hook,
-        );
-        let predicate_schema = required_columns.schema();
-        // Simplify the newly created predicate to get rid of redundant casts, comparisons, etc.
-        let predicate_expr =
-            PhysicalExprSimplifier::new(&predicate_schema).simplify(predicate_expr)?;
+        )?;
 
         let literal_guarantees = LiteralGuarantee::analyze(&expr);
 
@@ -1409,7 +1396,7 @@ impl PredicateRewriter {
         &self,
         expr: &Arc<dyn PhysicalExpr>,
         schema: &Schema,
-    ) -> Arc<dyn PhysicalExpr> {
+    ) -> Result<Arc<dyn PhysicalExpr>> {
         let mut required_columns = RequiredColumns::new();
         build_predicate_expression(
             expr,
@@ -1434,17 +1421,33 @@ fn build_predicate_expression(
     schema: &SchemaRef,
     required_columns: &mut RequiredColumns,
     unhandled_hook: &Arc<dyn UnhandledPredicateHook>,
-) -> Arc<dyn PhysicalExpr> {
+) -> Result<Arc<dyn PhysicalExpr>> {
+    build_predicate_expression_inner(expr, schema, required_columns, unhandled_hook).map_or_else(
+        || Ok(lit(true)),
+        |e| {
+            // Simplify the newly created predicate to get rid of redundant casts, comparisons, etc.
+            let predicate_schema = required_columns.schema();
+            PhysicalExprSimplifier::new(&predicate_schema).simplify(e)
+        }
+    )
+}
+
+fn build_predicate_expression_inner(
+    expr: &Arc<dyn PhysicalExpr>,
+    schema: &SchemaRef,
+    required_columns: &mut RequiredColumns,
+    unhandled_hook: &Arc<dyn UnhandledPredicateHook>,
+) -> Option<Arc<dyn PhysicalExpr>> {
     if is_always_false(expr) {
         // Shouldn't return `unhandled_hook.handle(expr)`
         // Because it will transfer false to true.
-        return Arc::clone(expr);
+        return Some(Arc::clone(expr));
     }
     // predicate expression can only be a binary expression
     let expr_any = expr.as_any();
     if let Some(is_null) = expr_any.downcast_ref::<phys_expr::IsNullExpr>() {
         return build_is_null_column_expr(is_null.arg(), schema, required_columns, false)
-            .unwrap_or_else(|| unhandled_hook.handle(expr));
+            .or_else(|| unhandled_hook.handle(expr));
     }
     if let Some(is_not_null) = expr_any.downcast_ref::<phys_expr::IsNotNullExpr>() {
         return build_is_null_column_expr(
@@ -1453,17 +1456,17 @@ fn build_predicate_expression(
             required_columns,
             true,
         )
-        .unwrap_or_else(|| unhandled_hook.handle(expr));
+        .or_else(|| unhandled_hook.handle(expr));
     }
     if let Some(col) = expr_any.downcast_ref::<phys_expr::Column>() {
         return build_single_column_expr(col, schema, required_columns, false)
-            .unwrap_or_else(|| unhandled_hook.handle(expr));
+            .or_else(|| unhandled_hook.handle(expr));
     }
     if let Some(not) = expr_any.downcast_ref::<phys_expr::NotExpr>() {
         // match !col (don't do so recursively)
         if let Some(col) = not.arg().as_any().downcast_ref::<phys_expr::Column>() {
             return build_single_column_expr(col, schema, required_columns, true)
-                .unwrap_or_else(|| unhandled_hook.handle(expr));
+                .or_else(|| unhandled_hook.handle(expr));
         } else {
             return unhandled_hook.handle(expr);
         }
@@ -1494,7 +1497,7 @@ fn build_predicate_expression(
                 })
                 .reduce(|a, b| Arc::new(phys_expr::BinaryExpr::new(a, re_op, b)) as _)
                 .unwrap();
-            return build_predicate_expression(
+            return build_predicate_expression_inner(
                 &change_expr,
                 schema,
                 required_columns,
@@ -1513,6 +1516,7 @@ fn build_predicate_expression(
                 Arc::clone(bin_expr.right()),
             )
         } else if let Some(like_expr) = expr_any.downcast_ref::<phys_expr::LikeExpr>() {
+            // TODO why is this needed? `ILike` seems to be handled in the match expression below
             if like_expr.case_insensitive() {
                 return unhandled_hook.handle(expr);
             }
@@ -1534,29 +1538,23 @@ fn build_predicate_expression(
 
     if op == Operator::And || op == Operator::Or {
         let left_expr =
-            build_predicate_expression(&left, schema, required_columns, unhandled_hook);
+            build_predicate_expression_inner(&left, schema, required_columns, unhandled_hook);
         let right_expr =
-            build_predicate_expression(&right, schema, required_columns, unhandled_hook);
-        // simplify boolean expression if applicable
-        let expr = match (&left_expr, op, &right_expr) {
-            (left, Operator::And, right)
-                if is_always_false(left) || is_always_false(right) =>
-            {
-                Arc::new(phys_expr::Literal::new(ScalarValue::Boolean(Some(false))))
-            }
-            (left, Operator::And, _) if is_always_true(left) => right_expr,
-            (_, Operator::And, right) if is_always_true(right) => left_expr,
-            (left, Operator::Or, right)
-                if is_always_true(left) || is_always_true(right) =>
-            {
-                Arc::new(phys_expr::Literal::new(ScalarValue::Boolean(Some(true))))
-            }
-            (left, Operator::Or, _) if is_always_false(left) => right_expr,
-            (_, Operator::Or, right) if is_always_false(right) => left_expr,
+            build_predicate_expression_inner(&right, schema, required_columns, unhandled_hook);
 
-            _ => Arc::new(phys_expr::BinaryExpr::new(left_expr, op, right_expr)),
+        return match (left_expr, right_expr) {
+            (None, None) => None,
+            (None, e) | (e, None) => {
+                if op == Operator::And {
+                    e
+                } else {
+                    None
+                }
+            },
+            (Some(l), Some(r)) => {
+                Some(Arc::new(phys_expr::BinaryExpr::new(l, op, r)))
+            }
         };
-        return expr;
     }
 
     let left_columns = ColumnReferenceCount::from_expression(&left);
@@ -1581,6 +1579,7 @@ fn build_predicate_expression(
     };
 
     build_statistics_expr(&mut expr_builder)
+        .map(|expr| Some(expr))
         .unwrap_or_else(|_| unhandled_hook.handle(expr))
 }
 
@@ -1976,7 +1975,7 @@ mod tests {
         datatypes::TimeUnit,
     };
     use datafusion_expr::expr::InList;
-    use datafusion_expr::{Expr, cast, is_null, try_cast};
+    use datafusion_expr::{cast, is_null, try_cast, Expr};
     use datafusion_functions_nested::expr_fn::{array_has, make_array};
     use datafusion_physical_expr::expressions::{
         self as phys_expr, DynamicFilterPhysicalExpr,
@@ -2838,7 +2837,7 @@ mod tests {
     #[test]
     fn row_group_predicate_not_bool() -> Result<()> {
         let schema = Schema::new(vec![Field::new("c1", DataType::Boolean, false)]);
-        let expected_expr = "NOT c1_min@0 AND c1_max@1";
+        let expected_expr = "NOT c1_min@0 OR NOT c1_max@1";
 
         let expr = col("c1").not();
         let predicate_expr =
@@ -3246,7 +3245,7 @@ mod tests {
     #[test]
     fn row_group_predicate_cast_int_int() -> Result<()> {
         let schema = Schema::new(vec![Field::new("c1", DataType::Int32, false)]);
-        let expected_expr = "c1_null_count@2 != row_count@3 AND CAST(c1_min@0 AS Int64) <= 1 AND 1 <= CAST(c1_max@1 AS Int64)";
+        let expected_expr = "c1_null_count@2 != row_count@3 AND c1_min@0 <= 1 AND c1_max@1 >= 1";
 
         // test cast(c1 as int64) = 1
         // test column on the left
@@ -3262,7 +3261,7 @@ mod tests {
         assert_eq!(predicate_expr.to_string(), expected_expr);
 
         let expected_expr =
-            "c1_null_count@1 != row_count@2 AND TRY_CAST(c1_max@0 AS Int64) > 1";
+            "c1_null_count@1 != row_count@2 AND c1_max@0 > 1";
 
         // test column on the left
         let expr =
@@ -3284,7 +3283,7 @@ mod tests {
     #[test]
     fn row_group_predicate_cast_string_string() -> Result<()> {
         let schema = Schema::new(vec![Field::new("c1", DataType::Utf8View, false)]);
-        let expected_expr = "c1_null_count@2 != row_count@3 AND CAST(c1_min@0 AS Utf8) <= 1 AND 1 <= CAST(c1_max@1 AS Utf8)";
+        let expected_expr = "c1_null_count@2 != row_count@3 AND c1_min@0 <= 1 AND c1_max@1 >= 1";
 
         // test column on the left
         let expr = cast(col("c1"), DataType::Utf8)
@@ -3447,7 +3446,7 @@ mod tests {
         .eq(lit(ScalarValue::Utf8(Some("test".to_string()))));
         let predicate_expr =
             test_build_predicate_expression(&expr, &schema, &mut RequiredColumns::new());
-        let expected_expr = "c1_null_count@2 != row_count@3 AND CAST(c1_min@0 AS Dictionary(UInt16, Utf8)) <= test AND test <= CAST(c1_max@1 AS Dictionary(UInt16, Utf8))";
+        let expected_expr = "c1_null_count@2 != row_count@3 AND c1_min@0 <= test AND c1_max@1 >= test";
         assert_eq!(predicate_expr.to_string(), expected_expr);
 
         Ok(())
@@ -3579,7 +3578,7 @@ mod tests {
             ],
             false,
         ));
-        let expected_expr = "c1_null_count@2 != row_count@3 AND CAST(c1_min@0 AS Int64) <= 1 AND 1 <= CAST(c1_max@1 AS Int64) OR c1_null_count@2 != row_count@3 AND CAST(c1_min@0 AS Int64) <= 2 AND 2 <= CAST(c1_max@1 AS Int64) OR c1_null_count@2 != row_count@3 AND CAST(c1_min@0 AS Int64) <= 3 AND 3 <= CAST(c1_max@1 AS Int64)";
+        let expected_expr = "c1_null_count@2 != row_count@3 AND c1_min@0 <= 1 AND c1_max@1 >= 1 OR c1_null_count@2 != row_count@3 AND c1_min@0 <= 2 AND c1_max@1 >= 2 OR c1_null_count@2 != row_count@3 AND c1_min@0 <= 3 AND c1_max@1 >= 3";
         let predicate_expr =
             test_build_predicate_expression(&expr, &schema, &mut RequiredColumns::new());
         assert_eq!(predicate_expr.to_string(), expected_expr);
@@ -3593,7 +3592,7 @@ mod tests {
             ],
             true,
         ));
-        let expected_expr = "c1_null_count@2 != row_count@3 AND (CAST(c1_min@0 AS Int64) != 1 OR 1 != CAST(c1_max@1 AS Int64)) AND c1_null_count@2 != row_count@3 AND (CAST(c1_min@0 AS Int64) != 2 OR 2 != CAST(c1_max@1 AS Int64)) AND c1_null_count@2 != row_count@3 AND (CAST(c1_min@0 AS Int64) != 3 OR 3 != CAST(c1_max@1 AS Int64))";
+        let expected_expr = "c1_null_count@2 != row_count@3 AND (c1_min@0 != 1 OR c1_max@1 != 1) AND c1_null_count@2 != row_count@3 AND (c1_min@0 != 2 OR c1_max@1 != 2) AND c1_null_count@2 != row_count@3 AND (c1_min@0 != 3 OR c1_max@1 != 3)";
         let predicate_expr =
             test_build_predicate_expression(&expr, &schema, &mut RequiredColumns::new());
         assert_eq!(predicate_expr.to_string(), expected_expr);
@@ -4833,15 +4832,15 @@ mod tests {
     }
 
     #[test]
-    fn test_rewrite_expr_to_prunable_custom_unhandled_hook() {
+    fn test_rewrite_expr_to_prunable_custom_unhandled_hook() -> Result<()> {
         struct CustomUnhandledHook;
 
         impl UnhandledPredicateHook for CustomUnhandledHook {
             /// This handles an arbitrary case of a column that doesn't exist in the schema
             /// by renaming it to yet another column that doesn't exist in the schema
             /// (the transformation is arbitrary, the point is that it can do whatever it wants)
-            fn handle(&self, _expr: &Arc<dyn PhysicalExpr>) -> Arc<dyn PhysicalExpr> {
-                Arc::new(phys_expr::Literal::new(ScalarValue::Int32(Some(42))))
+            fn handle(&self, _expr: &Arc<dyn PhysicalExpr>) -> Option<Arc<dyn PhysicalExpr>> {
+                Some(Arc::new(phys_expr::Literal::new(ScalarValue::Int32(Some(42)))))
             }
         }
 
@@ -4865,12 +4864,12 @@ mod tests {
             .rewrite_predicate_to_statistics_predicate(
                 &logical2physical(&known_expression, &schema),
                 &schema,
-            );
+            )?;
 
         // an expression referencing an unknown column (that is not in the schema) gets passed to the hook
         let input = col("b").eq(lit(12));
         let expected = logical2physical(&lit(42), &schema);
-        let transformed = transform_expr(input.clone());
+        let transformed = transform_expr(input.clone())?;
         assert_eq!(transformed.to_string(), expected.to_string());
 
         // more complex case with unknown column
@@ -4880,13 +4879,13 @@ mod tests {
             Operator::And,
             logical2physical(&lit(42), &schema),
         );
-        let transformed = transform_expr(input.clone());
+        let transformed = transform_expr(input.clone())?;
         assert_eq!(transformed.to_string(), expected.to_string());
 
         // an unknown expression gets passed to the hook
         let input = array_has(make_array(vec![lit(1)]), col("a"));
         let expected = logical2physical(&lit(42), &schema);
-        let transformed = transform_expr(input.clone());
+        let transformed = transform_expr(input.clone())?;
         assert_eq!(transformed.to_string(), expected.to_string());
 
         // more complex case with unknown expression
@@ -4896,8 +4895,10 @@ mod tests {
             Operator::And,
             logical2physical(&lit(42), &schema),
         );
-        let transformed = transform_expr(input.clone());
+        let transformed = transform_expr(input.clone())?;
         assert_eq!(transformed.to_string(), expected.to_string());
+
+        Ok(())
     }
 
     #[test]
@@ -5409,7 +5410,7 @@ mod tests {
             &Arc::new(schema.clone()),
             required_columns,
             &unhandled_hook,
-        )
+        ).unwrap()
     }
 
     #[test]
