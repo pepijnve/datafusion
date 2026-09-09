@@ -46,7 +46,7 @@ use datafusion_common::display::{PlanType, StringifiedPlan, ToStringifiedPlan};
 use datafusion_common::tree_node::TreeNode;
 use datafusion_common::{
     DFSchema, DataFusionError, ResolvedTableReference, TableReference, config_err,
-    exec_err, plan_datafusion_err,
+    exec_err, plan_datafusion_err, plan_err,
 };
 use datafusion_execution::TaskContext;
 use datafusion_execution::config::SessionConfig;
@@ -76,7 +76,9 @@ use datafusion_physical_expr_common::physical_expr::PhysicalExpr;
 use datafusion_physical_optimizer::optimizer::PhysicalOptimizer;
 use datafusion_physical_plan::ExecutionPlan;
 use datafusion_physical_plan::operator_statistics::StatisticsRegistry;
-use datafusion_session::{PhysicalOptimizerContext, PhysicalOptimizerRule, Session};
+use datafusion_session::{
+    CatalogProvider, PhysicalOptimizerContext, PhysicalOptimizerRule, Session,
+};
 #[cfg(feature = "sql")]
 use datafusion_sql::{
     parser::{DFParserBuilder, Statement},
@@ -404,28 +406,75 @@ impl SessionState {
         table_ref: impl Into<TableReference>,
     ) -> datafusion_common::Result<Arc<dyn SchemaProvider>> {
         let resolved_ref = self.resolve_table_ref(table_ref);
-        let catalog = self
-            .inner
-            .catalog_list
-            .catalog(&resolved_ref.catalog)
-            .ok_or_else(|| {
-                plan_datafusion_err!(
-                    "failed to resolve catalog: {}",
-                    resolved_ref.catalog
-                )
-            })?;
+        let catalog_name = resolved_ref.catalog.as_ref();
 
-        if self.config.information_schema() && *resolved_ref.schema == *INFORMATION_SCHEMA
+        if let Some(system_catalog) = self.inner.config.system_catalog()
+            && system_catalog == catalog_name
         {
-            return Ok(Arc::new(
-                InformationSchemaProvider::new(resolved_ref.catalog.to_string(), catalog)
-                    .with_table_functions(self.table_functions.clone()),
-            ));
+            if *resolved_ref.schema == *INFORMATION_SCHEMA {
+                return Ok(Arc::new(
+                    InformationSchemaProvider::new(Arc::clone(&self.inner.catalog_list))
+                        .with_table_functions(self.inner.table_functions.clone())
+                        .with_system_catalog(String::from(system_catalog)),
+                ));
+            }
+        } else {
+            let catalog =
+                self.inner
+                    .catalog_list
+                    .catalog(catalog_name)
+                    .ok_or_else(|| {
+                        plan_datafusion_err!("failed to resolve catalog: {catalog_name}")
+                    })?;
+
+            if self.inner.config.information_schema()
+                && *resolved_ref.schema == *INFORMATION_SCHEMA
+            {
+                #[derive(Debug)]
+                struct SingleCatalogList {
+                    catalog_name: String,
+                    catalog: Arc<dyn CatalogProvider>,
+                }
+
+                impl CatalogProviderList for SingleCatalogList {
+                    fn register_catalog(
+                        &self,
+                        _: String,
+                        _: Arc<dyn CatalogProvider>,
+                    ) -> Option<Arc<dyn CatalogProvider>> {
+                        None
+                    }
+
+                    fn catalog_names(&self) -> Vec<String> {
+                        vec![self.catalog_name.clone()]
+                    }
+
+                    fn catalog(&self, name: &str) -> Option<Arc<dyn CatalogProvider>> {
+                        if name == self.catalog_name {
+                            Some(Arc::clone(&self.catalog))
+                        } else {
+                            None
+                        }
+                    }
+                }
+
+                let catalog_list = Arc::new(SingleCatalogList {
+                    catalog_name: catalog_name.to_string(),
+                    catalog,
+                });
+
+                return Ok(Arc::new(
+                    InformationSchemaProvider::new(catalog_list)
+                        .with_table_functions(self.inner.table_functions.clone()),
+                ));
+            }
+
+            if let Some(schema) = catalog.schema(&resolved_ref.schema) {
+                return Ok(schema);
+            }
         }
 
-        catalog.schema(&resolved_ref.schema).ok_or_else(|| {
-            plan_datafusion_err!("failed to resolve schema: {}", resolved_ref.schema)
-        })
+        plan_err!("failed to resolve schema: {}", resolved_ref.schema)
     }
 
     /// Add `analyzer_rule` to the end of the list of
@@ -588,6 +637,27 @@ impl SessionState {
             statement,
             enable_ident_normalization,
         )?;
+
+        let table_refs = if let Some(system_catalog) = self.config().system_catalog() {
+            table_refs
+                .iter()
+                .map(|table_ref| match table_ref {
+                    TableReference::Partial { schema, table }
+                        if schema.as_ref() == INFORMATION_SCHEMA =>
+                    {
+                        TableReference::Full {
+                            catalog: Arc::from(system_catalog),
+                            schema: Arc::clone(schema),
+                            table: Arc::clone(table),
+                        }
+                    }
+                    r => r.clone(),
+                })
+                .collect()
+        } else {
+            table_refs
+        };
+
         Ok(table_refs)
     }
 

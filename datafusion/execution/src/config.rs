@@ -220,6 +220,11 @@ impl SessionConfig {
     }
 
     /// Is the information schema enabled?
+    pub fn system_catalog(&self) -> Option<&str> {
+        self.options.catalog.system_catalog.as_deref()
+    }
+
+    /// Is the information schema enabled?
     pub fn information_schema(&self) -> bool {
         self.options.catalog.information_schema
     }
@@ -285,7 +290,14 @@ impl SessionConfig {
         self
     }
 
-    /// Enables or disables the inclusion of `information_schema` virtual tables
+    /// Enables or disables the inclusion of the system virtual catalog
+    pub fn with_system_catalog(mut self, catalog_name: Option<String>) -> Self {
+        self.options_mut().catalog.system_catalog = catalog_name;
+        self
+    }
+
+    /// Enables or disables the inclusion of `information_schema` virtual tables in each user
+    /// defined catalog
     pub fn with_information_schema(mut self, enabled: bool) -> Self {
         self.options_mut().catalog.information_schema = enabled;
         self
