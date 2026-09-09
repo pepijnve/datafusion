@@ -40,6 +40,7 @@ use arrow::array::timezone::Tz;
 use arrow::datatypes::TimeUnit;
 use datafusion_common::DataFusionError;
 use datafusion_common::config::TableParquetOptions;
+use datafusion_common::tree_node::TreeNodeRecursion;
 use datafusion_datasource::TableSchema;
 use datafusion_datasource::file::FileSource;
 use datafusion_datasource::file_scan_config::FileScanConfig;
@@ -53,6 +54,10 @@ use datafusion_physical_expr_adapter::rewrite::{
 };
 use datafusion_physical_expr_common::physical_expr::PhysicalExpr;
 use datafusion_physical_expr_common::physical_expr::fmt_sql;
+#[cfg(feature = "proto")]
+use datafusion_physical_expr_common::sort_expr::{
+    optional_ordering_try_from_proto, sort_exprs_try_to_proto,
+};
 use datafusion_physical_plan::DisplayFormatType;
 use datafusion_physical_plan::SortOrderPushdownResult;
 use datafusion_physical_plan::filter_pushdown::PushedDown;
@@ -485,9 +490,8 @@ impl ParquetSource {
         self.table_parquet_options.global.max_predicate_cache_size
     }
 
-    /// Return the maximum size of an `IN (...)` list that the pruning
-    /// predicate will rewrite into per-value statistics checks. Lists
-    /// longer than this skip container-level pruning. Reads from
+    /// Return the maximum size of an `IN (...)` list eligible for statistics
+    /// pruning. Longer lists skip container-level pruning. Reads from
     /// `datafusion.execution.parquet.max_in_list_size`.
     pub fn max_in_list_size(&self) -> usize {
         self.table_parquet_options.global.max_in_list_size
@@ -805,7 +809,7 @@ impl FileSource for ParquetSource {
                             guarantees.join(", ")
                         )?;
                     }
-                };
+                }
                 Ok(())
             }
             DisplayFormatType::TreeRender => {
@@ -1058,6 +1062,20 @@ impl FileSource for ParquetSource {
         })
     }
 
+    fn apply_expressions(
+        &self,
+        f: &mut dyn FnMut(
+            &Arc<dyn PhysicalExpr>,
+        ) -> datafusion_common::Result<TreeNodeRecursion>,
+    ) -> datafusion_common::Result<TreeNodeRecursion> {
+        datafusion_physical_plan::apply_expression_roots(
+            self.predicate
+                .iter()
+                .chain(self.projection.iter().map(|proj_expr| &proj_expr.expr)),
+            f,
+        )
+    }
+
     /// Emit a `ParquetScan` node wrapping the shared base config plus the
     /// Parquet-specific pushdown predicate and `TableParquetOptions`.
     #[cfg(feature = "proto")]
@@ -1075,11 +1093,25 @@ impl FileSource for ParquetSource {
             .filter()
             .map(|pred| ctx.encode_expr(&pred))
             .transpose()?;
+        let sort_order_for_reorder = self
+            .sort_order_for_reorder
+            .as_ref()
+            .map(|ordering| -> datafusion_common::Result<_> {
+                Ok(protobuf::PhysicalSortExprNodeCollection {
+                    physical_sort_expr_nodes: sort_exprs_try_to_proto(
+                        ordering.iter(),
+                        &ctx.expr_ctx(),
+                    )?,
+                })
+            })
+            .transpose()?;
 
         let node = protobuf::ParquetScanExecNode {
             base_conf: Some(base.try_to_proto(ctx)?),
             predicate,
             parquet_options: Some(self.table_parquet_options().try_into()?),
+            sort_order_for_reorder,
+            reverse_row_groups: self.reverse_row_groups,
         };
         Ok(Some(protobuf::PhysicalPlanNode {
             physical_plan_type: Some(PhysicalPlanType::ParquetScan(node)),
@@ -1104,15 +1136,12 @@ impl ParquetSource {
         use datafusion_execution::object_store::ObjectStoreUrl;
         use datafusion_proto_models::protobuf;
 
-        let scan = match &node.physical_plan_type {
-            Some(protobuf::physical_plan_node::PhysicalPlanType::ParquetScan(scan)) => {
-                scan
-            }
-            _ => {
-                return datafusion_common::internal_err!(
-                    "PhysicalPlanNode is not a ParquetScan"
-                );
-            }
+        let Some(protobuf::physical_plan_node::PhysicalPlanType::ParquetScan(scan)) =
+            &node.physical_plan_type
+        else {
+            return datafusion_common::internal_err!(
+                "PhysicalPlanNode is not a ParquetScan"
+            );
         };
 
         let base_conf = scan.base_conf.as_ref().ok_or_else(|| {
@@ -1152,6 +1181,17 @@ impl ParquetSource {
             .as_ref()
             .map(|expr| ctx.decode_expr(expr, predicate_schema.as_ref()))
             .transpose()?;
+        let sort_order_for_reorder = scan
+            .sort_order_for_reorder
+            .as_ref()
+            .map(|ordering| {
+                optional_ordering_try_from_proto(
+                    &ordering.physical_sort_expr_nodes,
+                    &ctx.expr_ctx(predicate_schema.as_ref()),
+                )
+            })
+            .transpose()?
+            .flatten();
 
         let mut options = TableParquetOptions::default();
         if let Some(table_options) = scan.parquet_options.as_ref() {
@@ -1178,6 +1218,8 @@ impl ParquetSource {
         let mut source = ParquetSource::new(table_schema)
             .with_parquet_file_reader_factory(reader_factory)
             .with_table_parquet_options(options);
+        source.sort_order_for_reorder = sort_order_for_reorder;
+        source.reverse_row_groups = scan.reverse_row_groups;
 
         if let Some(predicate) = predicate {
             source = source.with_predicate(predicate);

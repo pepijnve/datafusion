@@ -170,8 +170,10 @@ fn update_coalesce_ctx_children(
         // Plan has no children, it cannot be a `CoalescePartitionsExec`.
         false
     } else if is_coalesce_partitions(&coalesce_context.plan) {
-        // Initiate a connection:
-        true
+        // A fetched coalesce selects rows before the sort. Removing it would
+        // lose that limit, and moving its fetch onto the sort changes which
+        // rows are selected.
+        coalesce_context.plan.fetch().is_none()
     } else {
         children.iter().enumerate().any(|(idx, node)| {
             // Only consider operators that don't require a single partition,
@@ -212,7 +214,7 @@ pub fn replace_with_partial_sort(
 
     let mut common_prefix_length = 0;
     while child_eq_properties
-        .ordering_satisfy(sort_exprs[0..common_prefix_length + 1].to_vec())?
+        .ordering_satisfy(sort_exprs[0..=common_prefix_length].to_vec())?
     {
         common_prefix_length += 1;
     }
@@ -461,13 +463,17 @@ pub fn ensure_sorting(
     } else if is_sort_preserving_merge(&requirements.plan)
         && child_node.plan.output_partitioning().partition_count() <= 1
     {
-        // This `SortPreservingMergeExec` is unnecessary, input already has a
-        // single partition and no fetch is required.
-        let mut child_node = requirements.children.swap_remove(0);
+        // This `SortPreservingMergeExec` is unnecessary because its input has a
+        // single partition.
+        let child_node = requirements.children.swap_remove(0);
         if let Some(fetch) = requirements.plan.fetch() {
-            // Add the limit exec if the original SPM had a fetch:
-            child_node.plan =
-                Arc::new(LocalLimitExec::new(Arc::clone(&child_node.plan), fetch));
+            let mut limit = LocalLimitExec::new(Arc::clone(&child_node.plan), fetch);
+            limit.set_required_ordering(requirements.plan.output_ordering().cloned());
+            return Ok(Transformed::yes(PlanContext::new(
+                Arc::new(limit),
+                false,
+                vec![child_node],
+            )));
         }
         return Ok(Transformed::yes(child_node));
     }
@@ -552,17 +558,33 @@ fn adjust_window_sort_removal(
     window_tree.children.push(child_node);
 
     let child_plan = &window_tree.children[0].plan;
+    // Captured up-front so the fallback `BoundedWindowAggExec::try_new` below
+    // can reinstall the observer that was on the source exec. `None` when
+    // the source is a `WindowAggExec` (no observer) or when no observer was
+    // installed on the source `BoundedWindowAggExec`.
+    let state_observer = window_tree
+        .plan
+        .downcast_ref::<BoundedWindowAggExec>()
+        .and_then(|exec| exec.state_observer().cloned());
     let (window_expr, new_window) = if let Some(exec) =
         window_tree.plan.downcast_ref::<WindowAggExec>()
     {
         let window_expr = exec.window_expr();
-        let new_window =
-            get_best_fitting_window(window_expr, child_plan, &exec.partition_keys())?;
+        let new_window = get_best_fitting_window(
+            window_expr,
+            child_plan,
+            &exec.partition_keys(),
+            None,
+        )?;
         (window_expr, new_window)
     } else if let Some(exec) = window_tree.plan.downcast_ref::<BoundedWindowAggExec>() {
         let window_expr = exec.window_expr();
-        let new_window =
-            get_best_fitting_window(window_expr, child_plan, &exec.partition_keys())?;
+        let new_window = get_best_fitting_window(
+            window_expr,
+            child_plan,
+            &exec.partition_keys(),
+            state_observer.clone(),
+        )?;
         (window_expr, new_window)
     } else {
         return plan_err!("Expected WindowAggExec or BoundedWindowAggExec");
@@ -585,12 +607,15 @@ fn adjust_window_sort_removal(
         window_tree.children.push(child_node);
 
         if window_expr.iter().all(|e| e.uses_bounded_memory()) {
-            Arc::new(BoundedWindowAggExec::try_new(
-                window_expr.to_vec(),
-                child_plan,
-                InputOrderMode::Sorted,
-                !window_expr[0].partition_by().is_empty(),
-            )?) as _
+            Arc::new(
+                BoundedWindowAggExec::try_new(
+                    window_expr.to_vec(),
+                    child_plan,
+                    InputOrderMode::Sorted,
+                    !window_expr[0].partition_by().is_empty(),
+                )?
+                .with_state_observer(state_observer)?,
+            ) as _
         } else {
             Arc::new(WindowAggExec::try_new(
                 window_expr.to_vec(),
@@ -645,11 +670,9 @@ fn remove_bottleneck_in_subplan_impl(
                 Some(Distribution::SinglePartition)
             )
     };
-    let remove_from_first_child = requirements
-        .children
-        .first()
-        .is_some_and(|child| is_coalesce_partitions(&child.plan))
-        && removable(0);
+    let remove_from_first_child = requirements.children.first().is_some_and(|child| {
+        is_coalesce_partitions(&child.plan) && child.plan.fetch().is_none()
+    }) && removable(0);
     let children = &mut requirements.children;
     if remove_from_first_child {
         // We can safely use the 0th index since we have a `CoalescePartitionsExec`.
@@ -759,7 +782,7 @@ fn remove_corresponding_sort_from_sub_plan(
                 repartition.properties().output_partitioning().clone(),
             )?) as _;
         }
-    };
+    }
     // Deleting a merging sort may invalidate distribution requirements.
     // Ensure that we stay compliant with such requirements:
     if requires_single_partition && node.plan.output_partitioning().partition_count() > 1
